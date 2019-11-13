@@ -7,7 +7,7 @@
       :width="canvas_width"
       :height="canvas_height"
       id="canvas"
-      ref="my-canvas"
+      ref="game_canvas"
     ></canvas>
   </div>
 </template>
@@ -31,22 +31,14 @@ export default {
   name: "Game",
   data() {
     return {
-      provider: {
-        // This is the CanvasRenderingContext that children will draw to.
-        context: null
-      },
       setCounter: 0,
-      board: [],
       allCards: [],
-      canvas_height: window.innerWidth,
-      canvas_width: window.innerHeight,
+      board: [],
+      clickedCards: [],
+      canvas_height: window.innerHeight / 2,
+      canvas_width: window.innerWidth,
       x: 0,
-      y: 0
-    };
-  },
-  provide() {
-    return {
-      provider: this.provider
+      y: 0,
     };
   },
   methods: {
@@ -87,21 +79,33 @@ export default {
       this.drawBoard(); // Draws the Board Cards
       this.findAllSets(); // Finds all Sets in the First Board
     },
+    getClickedCard(clickPosX, clickPosY) {
+      for (var i = 0; i < this.board.length; i++) {
+        if (this.board[i].x_min < clickPosX && this.board[i].y_min < clickPosY &&
+            this.board[i].x_max > clickPosX && this.board[i].y_max > clickPosY) {
+          this.$log.info("index", i);
+          return i;
+        }
+      }
+    },
     clickOnCanvas(event) {
-      var canvas = document.getElementById("canvas");
-      var rect = canvas.getBoundingClientRect();
+      var rect = this.canvas.getBoundingClientRect();
       this.x = event.clientX - rect.left;
       this.y = event.clientY - rect.top;
-      this.$log.info("x", this.x);
-      this.$log.info("y", this.y);
+      if (this.clickedCards.length !== 3) {
+        this.clickedCards.push(this.getClickedCard(this.x, this.y))
+      } else {
+        this.$log.info("clickedCard", this.clickedCards);
+      }
     },
     getRandomCard: function() {
       const number = Math.floor(Math.random() * 100) % this.allCards.length;
       return this.allCards[number];
     },
     drawBoard: function() {
-      const heigth = this.canvas_height / 4.3;
-      const width = this.canvas_width / 3.3;
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      const heigth = (window.innerHeight / 2) / 4;
+      const width = window.innerWidth / 3.4;
       
       // First Row
       this.drawAnImageAndPushCardToBoard(this.getRandomCard(), 10, 0, width, heigth);
@@ -124,8 +128,8 @@ export default {
     },
     drawAnImageAndPushCardToBoard: function(card, dx, dy, dWidth, dHeight) {
        // Putting the image and its coordinates on the canvas
-      var canvas = document.getElementById("canvas"),
-        ctx = canvas.getContext("2d");
+      // var canvas = document.getElementById("canvas"),
+      var  ctx = this.ctx;
       var cardNumber = card.color + '' + card.amount + '' + card.filling + '' + card.form
 
       let img = new Image(); // create new Image
@@ -133,17 +137,28 @@ export default {
       img.src = require("../assets/" + cardNumber + ".png"); // load the image with a reletive Path
       img.addEventListener("load", draw, false); // Listener for Canvas img to load
       function draw() {
-        ctx.drawImage(img, dx, dy, dWidth, dHeight);
+        ctx.drawImage(img, dx, dy, dWidth , dHeight);
       }
-      // TODO: Max Value is wrong
-      card.setPosition(dx, dy, dWidth - dx, dHeight- dy);
+      // Height divided by 2 because the canvas takes half the screen
+      card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy ));
       this.board.push(card); // Add current Card to the Board
-      this.allCards.splice(this.allCards.indexOf(card), 1)
+      
+      this.allCards.splice(this.allCards.indexOf(card), 1);
     }
   },
   mounted: function() {
     // TODO: If one Card is in board Array. Dont call the function
     this.createAllCards(); // Also Draws the First Board and Find all possible Sets
+    // TODO: Remove Resize Bug/ Change board Card coordinates// Or save it in an array
+    // window.addEventListener('resize', this.drawBoard);
+  },
+  computed: {
+    canvas: function () {
+        return this.$refs.game_canvas;
+    },
+    ctx: function () {
+        return this.canvas.getContext('2d');
+    }
   },
   props: {}
 };
@@ -161,7 +176,7 @@ canvas {
   overflow: hidden;
   bottom: 0%;
   width: 100%;
-  height: 60%;
+  height: 50%;
 }
 /* html, body {
   width:  100%;
