@@ -2,6 +2,7 @@
   <div class="about">
     <h1>Set the Game</h1>
     <p>amount of Sets {{setCounter}}</p>
+    <p>Points: {{points}}</p>
     <canvas
       @click="clickOnCanvas($event)"
       :width="canvas_width"
@@ -39,6 +40,8 @@ export default {
       canvas_width: window.innerWidth,
       x: 0,
       y: 0,
+      points: 0,
+      pointsForCurrentSet: 100
     };
   },
   methods: {
@@ -97,24 +100,27 @@ export default {
       }
     },
     clickOnCanvas(event) {
+      // TODO: Stop the Game when all Sets are Found and this.allCards are empty
       var rect = this.canvas.getBoundingClientRect();
       this.x = event.clientX - rect.left;
       this.y = event.clientY - rect.top;
-      // TODO: Add a Timer for points
       // When three Cards are Selected check them
       if (this.clickedCards.length === 2) {
         this.clickedCards.push(this.getClickedCard(this.x, this.y)); // Add Card to the "checkForSet" Array
         // When a Set is found replace the old Cards with new Cards and redraw the board
         if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
+          this.points = this.points + this.pointsForCurrentSet; // Adds points for the correct Set
           for (var i = 0; i < 3; i++) {
             this.board.splice(this.clickedCards[i], 1, this.getRandomCard());
             this.allCards.splice(this.allCards.indexOf(this.board[this.clickedCards[i]]), 1);
           }
           this.drawBoard(this.board);
           this.findAllSets();
+          this.pointsForCurrentSet = 100; // Reset the Points for one Set
         }
-        this.clickedCards = [];
+        this.clickedCards = []; // Reset the clicked Cards
       } else {
+        // TODO: Add a Counter when after 5 Seconds a wrong set or not enough cards are selected
         this.clickedCards.push(this.getClickedCard(this.x, this.y)) // Add Card to the "checkForSet" Array
       }
     },
@@ -123,6 +129,7 @@ export default {
       return this.allCards[number];
     },
     drawBoard: function(board) {
+      // TODO: Draw only the new Cards
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       const heigth = (window.innerHeight / 2) / 4;
       const width = window.innerWidth / 3.4;
@@ -158,13 +165,19 @@ export default {
       }
       // Height divided by 2 because the canvas takes half the screen
       card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy ));
-      
-      
-    }
+    },
+    startSetInterval: function () {
+      const self = this
+      setInterval(function() {
+        if (self.pointsForCurrentSet - 1 >= 0) {
+          self.pointsForCurrentSet = self.pointsForCurrentSet - 1
+        }
+      }, 1000);
+    },
   },
   mounted: function() {
-    // TODO: If one Card is in board Array. Dont call the function
     this.createAllCards(); // Also Draws the First Board and Find all possible Sets
+    this.startSetInterval();
     // TODO: Remove Resize Bug/ Change board Card coordinates// Or save it in an array
     // window.addEventListener('resize', this.drawBoard);
   },
