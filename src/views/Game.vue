@@ -45,22 +45,28 @@ export default {
     checkSetProperties(first, second, third){
       return (first === second && first === third) || (first !== second && first !== third && second !== third) ;
     },
-    // TODO: Board as Parameter and for the selected Set
+    checkThreeCardsForASet(firstCard, secondCard, thirdCard){
+      if (this.checkSetProperties(
+        this.board[firstCard].color, this.board[secondCard].color, this.board[thirdCard].color) &&
+        this.checkSetProperties(
+        this.board[firstCard].amount, this.board[secondCard].amount, this.board[thirdCard].amount) &&
+        this.checkSetProperties(
+        this.board[firstCard].filling, this.board[secondCard].filling, this.board[thirdCard].filling) &&
+        this.checkSetProperties(
+        this.board[firstCard].form, this.board[secondCard].form, this.board[thirdCard].form)
+        ){
+        return true;
+      }
+      return false;
+    },
     findAllSets(){
+      this.setCounter = 0;
       for (var firstCard = 0; firstCard < this.board.length - 2; firstCard++) {
         for (var secondCard = firstCard + 1; secondCard < this.board.length - 1; secondCard++) {
           for (var thirdCard = secondCard + 1; thirdCard < this.board.length; thirdCard++) {
-            if (this.checkSetProperties(
-              this.board[firstCard].color, this.board[secondCard].color, this.board[thirdCard].color) &&
-              this.checkSetProperties(
-              this.board[firstCard].amount, this.board[secondCard].amount, this.board[thirdCard].amount) &&
-              this.checkSetProperties(
-              this.board[firstCard].filling, this.board[secondCard].filling, this.board[thirdCard].filling) &&
-              this.checkSetProperties(
-              this.board[firstCard].form, this.board[secondCard].form, this.board[thirdCard].form)
-              ){
-              this.setCounter = this.setCounter + 1;
-            }
+           if (this.checkThreeCardsForASet(firstCard, secondCard, thirdCard)) {
+             this.setCounter = this.setCounter + 1;
+           }
           }
         }
       }
@@ -75,15 +81,17 @@ export default {
           }
         }
       }
-      // this.$log.info("size", this.allCards);
-      this.drawBoard(); // Draws the Board Cards
+      for (var i = 0; i < 12; i++) {
+        this.board.push(this.getRandomCard());
+        this.allCards.splice(this.allCards.indexOf(this.board[i]), 1);
+      }
+      this.drawBoard(this.board); // Draws the Board Cards
       this.findAllSets(); // Finds all Sets in the First Board
     },
     getClickedCard(clickPosX, clickPosY) {
       for (var i = 0; i < this.board.length; i++) {
         if (this.board[i].x_min < clickPosX && this.board[i].y_min < clickPosY &&
             this.board[i].x_max > clickPosX && this.board[i].y_max > clickPosY) {
-          this.$log.info("index", i);
           return i;
         }
       }
@@ -92,44 +100,53 @@ export default {
       var rect = this.canvas.getBoundingClientRect();
       this.x = event.clientX - rect.left;
       this.y = event.clientY - rect.top;
-      if (this.clickedCards.length !== 3) {
-        this.clickedCards.push(this.getClickedCard(this.x, this.y))
+      // TODO: Add a Timer for points
+      // When three Cards are Selected check them
+      if (this.clickedCards.length === 2) {
+        this.clickedCards.push(this.getClickedCard(this.x, this.y)); // Add Card to the "checkForSet" Array
+        // When a Set is found replace the old Cards with new Cards and redraw the board
+        if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
+          for (var i = 0; i < 3; i++) {
+            this.board.splice(this.clickedCards[i], 1, this.getRandomCard());
+            this.allCards.splice(this.allCards.indexOf(this.board[this.clickedCards[i]]), 1);
+          }
+          this.drawBoard(this.board);
+          this.findAllSets();
+        }
+        this.clickedCards = [];
       } else {
-        this.$log.info("clickedCard", this.clickedCards);
+        this.clickedCards.push(this.getClickedCard(this.x, this.y)) // Add Card to the "checkForSet" Array
       }
     },
     getRandomCard: function() {
       const number = Math.floor(Math.random() * 100) % this.allCards.length;
       return this.allCards[number];
     },
-    drawBoard: function() {
+    drawBoard: function(board) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       const heigth = (window.innerHeight / 2) / 4;
       const width = window.innerWidth / 3.4;
-      
+  
       // First Row
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), 10, 0, width, heigth);
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), width + 20, 0, width, heigth);
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), width * 2 + 30, 0, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[0], 10, 0, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[1], width + 20, 0, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[2], width * 2 + 30, 0, width, heigth);
       // Second Row
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), 10, heigth, width, heigth);
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), width + 20, heigth, width, heigth);
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), width * 2 + 30, heigth, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[3], 10, heigth, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[4], width + 20, heigth, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[5], width * 2 + 30, heigth, width, heigth);
       // Third Row
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), 10, heigth * 2, width, heigth);
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), width + 20, heigth * 2, width, heigth);
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), width * 2 + 30, heigth * 2, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[6], 10, heigth * 2, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[7], width + 20, heigth * 2, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[8], width * 2 + 30, heigth * 2, width, heigth);
       // Fourth Row
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), 10, heigth * 3, width, heigth);
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), width + 20, heigth * 3, width, heigth);
-      this.drawAnImageAndPushCardToBoard(this.getRandomCard(), width * 2 + 30, heigth * 3, width, heigth);
-        // TODO: Get Random Card after a Set is found
-        // TODO: On which position will the new Card appear
+      this.drawAnImageAndPushCardToBoard(board[9], 10, heigth * 3, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[10], width + 20, heigth * 3, width, heigth);
+      this.drawAnImageAndPushCardToBoard(board[11], width * 2 + 30, heigth * 3, width, heigth);
     },
     drawAnImageAndPushCardToBoard: function(card, dx, dy, dWidth, dHeight) {
-       // Putting the image and its coordinates on the canvas
-      // var canvas = document.getElementById("canvas"),
-      var  ctx = this.ctx;
+      // Putting the image and its coordinates on the canvas
+      var ctx = this.ctx;
       var cardNumber = card.color + '' + card.amount + '' + card.filling + '' + card.form
 
       let img = new Image(); // create new Image
@@ -141,9 +158,8 @@ export default {
       }
       // Height divided by 2 because the canvas takes half the screen
       card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy ));
-      this.board.push(card); // Add current Card to the Board
       
-      this.allCards.splice(this.allCards.indexOf(card), 1);
+      
     }
   },
   mounted: function() {
