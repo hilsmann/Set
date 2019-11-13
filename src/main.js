@@ -15,7 +15,10 @@ const options = {
     showLogLevel : true,
     showMethodName : true,
     separator: '|',
-    showConsoleColors: true
+    showConsoleColors: true,
+    publicPath: process.env.NODE_ENV === 'production'
+    ? '/Set/'
+    : '/'
 };
  
 Vue.use(VueLogger, options);
