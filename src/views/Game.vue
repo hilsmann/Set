@@ -27,12 +27,12 @@ class Card {
     this.y_max = y_max;
   }
 }
-//class Highscore {
-//  constructor(name, score) {
-//    this.name = name;
-//    this.scroe = score;
-//  }
-//}
+class Highscore {
+  constructor(name, score) {
+    this.name = name;
+    this.score = score;
+  }
+}
 export default {
   name: "Game",
   data() {
@@ -119,6 +119,18 @@ export default {
         this.redrawCardAfterSelcted(cardIndex,"blue");
       }
     },
+    // TODO: Sortiert einfügen
+    saveScore() {
+      var score = new Highscore("sven2", this.points);
+      var a = [];
+      if (JSON.parse(localStorage.getItem('set_game'))){
+        a = JSON.parse(localStorage.getItem('set_game'))
+      }
+      a.push(score)
+      localStorage.setItem('set_game', JSON.stringify(a));
+      var game_zeug = JSON.parse(localStorage.getItem('set_game'));
+      this.$log.info(game_zeug);
+    },
     clickOnCanvas(event) {
       // TODO: Stop the Game when all Sets are Found and this.allCards are empty
       var rect = this.canvas.getBoundingClientRect();
@@ -141,12 +153,7 @@ export default {
             // TODO: Only redraw the selected Cards
             this.drawBoard(this.board);
 
-            // TEST: Save in Highscroe
-            //var score = new Highscore("sven", this.points);
-            //localStorage.set_game = JSON.parse([]);
-            //var game_zeug = localStorage.set_game;
-            //game_zeug.push(score);
-            //this.$log.info(localStorage.set_game[0]);
+            this.saveScore();
           } else {
             this.pointsForCurrentSet = this.pointsForCurrentSet - 5
           }
