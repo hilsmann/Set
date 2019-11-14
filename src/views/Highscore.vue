@@ -1,11 +1,5 @@
 <template>
   <div>
-    <b-pagination
-      v-model="currentPage"
-      :per-page="perPage"
-      :total-rows="rows"
-      aria-controls="my-table"
-    ></b-pagination>
     <b-table
       striped
       hover
@@ -16,8 +10,15 @@
       :current-page="currentPage"
       :per-page="perPage"
       id="my-table"
-    >
-    </b-table>
+    ></b-table>
+    <b-pagination
+      class="group"
+      v-model="currentPage"
+      :per-page="perPage"
+      :total-rows="rows"
+      align="fill"
+      aria-controls="my-table"
+    ></b-pagination>
   </div>
 </template>
 
@@ -26,14 +27,14 @@ export default {
   name: "Highscore",
   data() {
     return {
-      perPage: 10,
+      perPage: 5,
       currentPage: 1,
       fields: [
-        { key: "scroe", sortable: true },
-        { key: "name", sortable: false }
+        { key: "score", sortable: true },
+        { key: "name", sortable: true }
       ],
       allScores: JSON.parse(localStorage.getItem("set_game")),
-      sortBy: "scroe",
+      sortBy: "score",
       sortDesc: true
     };
   },

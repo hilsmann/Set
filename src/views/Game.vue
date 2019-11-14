@@ -1,5 +1,5 @@
 <template>
-  <div class="about">
+  <div>
     <p>Amount of Sets {{setCounter}} </p>
     <p>Points: {{points}}</p>
     <canvas
@@ -9,6 +9,22 @@
       id="canvas"
       ref="game_canvas"
     ></canvas>
+    <b-modal ref="highscore-modal" hide-footer title="Congratulation you did it!">
+      <form ref="form" @submit.stop.prevent="handleSubmit">
+        <b-form-group
+          label="Please enter your name"
+          label-for="name-input"
+          invalid-feedback="Name is required"
+        >
+        <b-form-input
+          id="name-input"
+          v-model="name"
+          required
+        ></b-form-input>
+        </b-form-group>
+      </form>
+      <b-button class="mt-3" variant="success" block @click="saveScore">save</b-button>
+    </b-modal>
   </div>
 </template>
 
@@ -37,6 +53,7 @@ export default {
   name: "Game",
   data() {
     return {
+      name: '',
       setCounter: 0,
       allCards: [],
       board: [],
@@ -50,6 +67,9 @@ export default {
     };
   },
   methods: {
+    showModal() {
+      this.$refs['highscore-modal'].show()
+    },
     // TODO: Add a save Button for the current Game
     checkSetProperties(first, second, third){
       return (first === second && first === third) || (first !== second && first !== third && second !== third) ;
@@ -107,9 +127,9 @@ export default {
     },
     redrawCardAfterSelcted(cardIndex, color){
       var card = this.board[cardIndex];
-      this.ctx.clearRect(card.x_min - 10, card.y_min - 0, card.x_max - card.x_min, card.y_max - card.y_min);
+      this.ctx.clearRect(card.x_min - 10, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min);
       this.ctx.fillStyle = color;
-      this.ctx.fillRect(card.x_min - 10, card.y_min - 0, card.x_max - card.x_min + 20, card.y_max - card.y_min);
+      this.ctx.fillRect(card.x_min - 10, card.y_min, card.x_max - card.x_min + 20, card.y_max - card.y_min);
       this.drawCard(card, card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min);
     },
     addAndRedrawSelectedCard(x, y){
@@ -119,17 +139,15 @@ export default {
         this.redrawCardAfterSelcted(cardIndex,"blue");
       }
     },
-    // TODO: Sortiert einfügen
     saveScore() {
-      var score = new Highscore("sven2", this.points);
+      var score = new Highscore(this.name, this.points);
       var a = [];
       if (JSON.parse(localStorage.getItem('set_game'))){
         a = JSON.parse(localStorage.getItem('set_game'))
       }
       a.push(score)
       localStorage.setItem('set_game', JSON.stringify(a));
-      var game_zeug = JSON.parse(localStorage.getItem('set_game'));
-      this.$log.info(game_zeug);
+      this.$router.push('highscore')
     },
     clickOnCanvas(event) {
       // TODO: Stop the Game when all Sets are Found and this.allCards are empty
@@ -153,7 +171,7 @@ export default {
             // TODO: Only redraw the selected Cards
             this.drawBoard(this.board);
 
-            this.saveScore();
+            this.showModal();
           } else {
             this.pointsForCurrentSet = this.pointsForCurrentSet - 5
           }
