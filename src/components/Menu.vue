@@ -1,8 +1,9 @@
 <template>
   <div>
-    <b-button-group vertical>
-      <b-button block to="/game" variant="info">Game</b-button>
-      <b-button block variant="primary">Settings</b-button>
+    <b-button-group class="group"  vertical>
+      <b-button block to="/game" variant="success">Game</b-button>
+      <b-button block to="/settings" variant="primary">Settings</b-button>
+      <b-button block to="/highscore" variant="info">Highscore</b-button>
     </b-button-group>
   </div>
 </template>
@@ -16,7 +17,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-a {
-  color: #42b983;
+.group{
+  width: 100%;
 }
 </style>

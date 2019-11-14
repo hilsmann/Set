@@ -1,7 +1,6 @@
 <template>
   <div class="about">
-    <h1>Set the Game</h1>
-    <p>amount of Sets {{setCounter}}</p>
+    <p>Amount of Sets {{setCounter}} </p>
     <p>Points: {{points}}</p>
     <canvas
       @click="clickOnCanvas($event)"
@@ -28,6 +27,12 @@ class Card {
     this.y_max = y_max;
   }
 }
+//class Highscore {
+//  constructor(name, score) {
+//    this.name = name;
+//    this.scroe = score;
+//  }
+//}
 export default {
   name: "Game",
   data() {
@@ -45,6 +50,7 @@ export default {
     };
   },
   methods: {
+    // TODO: Add a save Button for the current Game
     checkSetProperties(first, second, third){
       return (first === second && first === third) || (first !== second && first !== third && second !== third) ;
     },
@@ -134,6 +140,13 @@ export default {
             this.pointsForCurrentSet = 100; // Reset the Points for one Set
             // TODO: Only redraw the selected Cards
             this.drawBoard(this.board);
+
+            // TEST: Save in Highscroe
+            //var score = new Highscore("sven", this.points);
+            //localStorage.set_game = JSON.parse([]);
+            //var game_zeug = localStorage.set_game;
+            //game_zeug.push(score);
+            //this.$log.info(localStorage.set_game[0]);
           } else {
             this.pointsForCurrentSet = this.pointsForCurrentSet - 5
           }
@@ -153,7 +166,6 @@ export default {
       return this.allCards[number];
     },
     drawBoard: function(board) {
-      // TODO: Draw only the new Cards
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       const heigth = (window.innerHeight / 2) / 4;
       const width = window.innerWidth / 3.4;
@@ -219,9 +231,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.icon:hover {
-  fill: #DA4567;
-}
 canvas {
   background-color: white;
   display: block;
@@ -231,9 +240,4 @@ canvas {
   width: 100%;
   height: 50%;
 }
-/* html, body {
-  width:  100%;
-  height: 100%;
-  margin: 0;
-} */
 </style>
