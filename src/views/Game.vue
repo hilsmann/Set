@@ -99,6 +99,20 @@ export default {
         }
       }
     },
+    redrawCardAfterSelcted(cardIndex, color){
+      var card = this.board[cardIndex];
+      this.ctx.clearRect(card.x_min - 10, card.y_min - 0, card.x_max - card.x_min, card.y_max - card.y_min);
+      this.ctx.fillStyle = color;
+      this.ctx.fillRect(card.x_min - 10, card.y_min - 0, card.x_max - card.x_min + 20, card.y_max - card.y_min);
+      this.drawCard(card, card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min);
+    },
+    addAndRedrawSelectedCard(x, y){
+      var cardIndex = this.getClickedCard(x, y);
+      if (!this.clickedCards.includes(cardIndex)){
+        this.clickedCards.push(cardIndex); // Add Card to the "checkForSet" Array
+        this.redrawCardAfterSelcted(cardIndex,"blue");
+      }
+    },
     clickOnCanvas(event) {
       // TODO: Stop the Game when all Sets are Found and this.allCards are empty
       var rect = this.canvas.getBoundingClientRect();
@@ -106,22 +120,32 @@ export default {
       this.y = event.clientY - rect.top;
       // When three Cards are Selected check them
       if (this.clickedCards.length === 2) {
-        this.clickedCards.push(this.getClickedCard(this.x, this.y)); // Add Card to the "checkForSet" Array
-        // When a Set is found replace the old Cards with new Cards and redraw the board
-        if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
-          this.points = this.points + this.pointsForCurrentSet; // Adds points for the correct Set
-          for (var i = 0; i < 3; i++) {
-            this.board.splice(this.clickedCards[i], 1, this.getRandomCard());
-            this.allCards.splice(this.allCards.indexOf(this.board[this.clickedCards[i]]), 1);
+        this.addAndRedrawSelectedCard(this.x, this.y);
+        if (this.clickedCards.length === 3) {
+          // When a Set is found replace the old Cards with new Cards and redraw the board
+          if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
+            this.points = this.points + this.pointsForCurrentSet; // Adds points for the correct Set
+            for (var i = 0; i < 3; i++) {
+              this.board.splice(this.clickedCards[i], 1, this.getRandomCard());
+              this.allCards.splice(this.allCards.indexOf(this.board[this.clickedCards[i]]), 1);
+              //this.redrawCardAfterSelcted(this.clickedCards[i], "red");
+            }
+            this.findAllSets();
+            this.pointsForCurrentSet = 100; // Reset the Points for one Set
+            // TODO: Only redraw the selected Cards
+            this.drawBoard(this.board);
+          } else {
+            this.pointsForCurrentSet = this.pointsForCurrentSet - 5
           }
-          this.drawBoard(this.board);
-          this.findAllSets();
-          this.pointsForCurrentSet = 100; // Reset the Points for one Set
+          // Reset Clicked Cards
+          for (var j = 0; j < this.clickedCards.length; j++) {
+            this.redrawCardAfterSelcted(this.clickedCards[j], "white");
+          }
+          this.clickedCards = []; // Reset the clicked Cards
         }
-        this.clickedCards = []; // Reset the clicked Cards
       } else {
         // TODO: Add a Counter when after 5 Seconds a wrong set or not enough cards are selected
-        this.clickedCards.push(this.getClickedCard(this.x, this.y)) // Add Card to the "checkForSet" Array
+        this.addAndRedrawSelectedCard(this.x, this.y);
       }
     },
     getRandomCard: function() {
@@ -135,23 +159,23 @@ export default {
       const width = window.innerWidth / 3.4;
   
       // First Row
-      this.drawAnImageAndPushCardToBoard(board[0], 10, 0, width, heigth);
-      this.drawAnImageAndPushCardToBoard(board[1], width + 20, 0, width, heigth);
-      this.drawAnImageAndPushCardToBoard(board[2], width * 2 + 30, 0, width, heigth);
+      this.drawCard(board[0], 10, 0, width, heigth);
+      this.drawCard(board[1], width + 20, 0, width, heigth);
+      this.drawCard(board[2], width * 2 + 30, 0, width, heigth);
       // Second Row
-      this.drawAnImageAndPushCardToBoard(board[3], 10, heigth, width, heigth);
-      this.drawAnImageAndPushCardToBoard(board[4], width + 20, heigth, width, heigth);
-      this.drawAnImageAndPushCardToBoard(board[5], width * 2 + 30, heigth, width, heigth);
+      this.drawCard(board[3], 10, heigth, width, heigth);
+      this.drawCard(board[4], width + 20, heigth, width, heigth);
+      this.drawCard(board[5], width * 2 + 30, heigth, width, heigth);
       // Third Row
-      this.drawAnImageAndPushCardToBoard(board[6], 10, heigth * 2, width, heigth);
-      this.drawAnImageAndPushCardToBoard(board[7], width + 20, heigth * 2, width, heigth);
-      this.drawAnImageAndPushCardToBoard(board[8], width * 2 + 30, heigth * 2, width, heigth);
+      this.drawCard(board[6], 10, heigth * 2, width, heigth);
+      this.drawCard(board[7], width + 20, heigth * 2, width, heigth);
+      this.drawCard(board[8], width * 2 + 30, heigth * 2, width, heigth);
       // Fourth Row
-      this.drawAnImageAndPushCardToBoard(board[9], 10, heigth * 3, width, heigth);
-      this.drawAnImageAndPushCardToBoard(board[10], width + 20, heigth * 3, width, heigth);
-      this.drawAnImageAndPushCardToBoard(board[11], width * 2 + 30, heigth * 3, width, heigth);
+      this.drawCard(board[9], 10, heigth * 3, width, heigth);
+      this.drawCard(board[10], width + 20, heigth * 3, width, heigth);
+      this.drawCard(board[11], width * 2 + 30, heigth * 3, width, heigth);
     },
-    drawAnImageAndPushCardToBoard: function(card, dx, dy, dWidth, dHeight) {
+    drawCard: function(card, dx, dy, dWidth, dHeight) {
       // Putting the image and its coordinates on the canvas
       var ctx = this.ctx;
       var cardNumber = card.color + '' + card.amount + '' + card.filling + '' + card.form
@@ -199,7 +223,7 @@ export default {
   fill: #DA4567;
 }
 canvas {
-  background-color: #ccc;
+  background-color: white;
   display: block;
   position: absolute;
   overflow: hidden;
