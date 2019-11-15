@@ -2,6 +2,8 @@
   <div>
     <p>Amount of Sets {{setCounter}} </p>
     <p>Points: {{points}}</p>
+    <!-- TODO: more distance to the canvas-->
+    <b-button v-if="noMoreSets" class="mt-3" variant="warning" block @click="resetBoard">shuffle board</b-button>
     <canvas
       @click="clickOnCanvas($event)"
       :width="canvas_width"
@@ -63,7 +65,8 @@ export default {
       x: 0,
       y: 0,
       points: 0,
-      pointsForCurrentSet: 100
+      pointsForCurrentSet: 100,
+      noMoreSets: false
     };
   },
   methods: {
@@ -100,6 +103,21 @@ export default {
         }
       }
     },
+    resetBoard() {
+      for (var k = 0; k < 12; k++) {
+        this.allCards.push(this.board[k]);
+      }
+      this.board = [];
+      this.createNewBoard();
+      this.noMoreSets = false;
+    },
+    createNewBoard(){
+      for (var i = 0; i < 12; i++) {
+        this.board.push(this.getRandomCard());
+      }
+      this.drawBoard(this.board); // Draws the Board Cards
+      this.findAllSets(); // Finds all Sets in the First Board
+    },
     createAllCards() {
       for (var color = 0; color < 3; color++) {
         for (var form = 0; form < 3; form++) {
@@ -110,12 +128,6 @@ export default {
           }
         }
       }
-      for (var i = 0; i < 12; i++) {
-        this.board.push(this.getRandomCard());
-        this.allCards.splice(this.allCards.indexOf(this.board[i]), 1);
-      }
-      this.drawBoard(this.board); // Draws the Board Cards
-      this.findAllSets(); // Finds all Sets in the First Board
     },
     getClickedCard(clickPosX, clickPosY) {
       for (var i = 0; i < this.board.length; i++) {
@@ -140,77 +152,118 @@ export default {
       }
     },
     saveScore() {
-      var score = new Highscore(this.name, this.points);
-      var a = [];
+      var newScore = new Highscore(this.name, this.points);
+      var allScores = [];
       if (JSON.parse(localStorage.getItem('set_game'))){
-        a = JSON.parse(localStorage.getItem('set_game'))
+        allScores = JSON.parse(localStorage.getItem('set_game'))
       }
-      a.push(score)
-      localStorage.setItem('set_game', JSON.stringify(a));
+      allScores.push(newScore)
+      localStorage.setItem('set_game', JSON.stringify(allScores));
       this.$router.push('highscore')
     },
     clickOnCanvas(event) {
-      // TODO: Stop the Game when all Sets are Found and this.allCards are empty
       var rect = this.canvas.getBoundingClientRect();
       this.x = event.clientX - rect.left;
       this.y = event.clientY - rect.top;
+      this.addAndRedrawSelectedCard(this.x, this.y);
+      // TODO: Add a Counter when after 5 Seconds a wrong set or not enough cards are selected
       // When three Cards are Selected check them
-      if (this.clickedCards.length === 2) {
-        this.addAndRedrawSelectedCard(this.x, this.y);
-        if (this.clickedCards.length === 3) {
-          // When a Set is found replace the old Cards with new Cards and redraw the board
-          if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
-            this.points = this.points + this.pointsForCurrentSet; // Adds points for the correct Set
+      if (this.clickedCards.length === 3) {
+        // When a Set is found replace the old Cards with new Cards and redraw the board
+        if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
+          this.points = this.points + this.pointsForCurrentSet; // Adds points for the correct Set
+          if (this.allCards.length >= 3) {
             for (var i = 0; i < 3; i++) {
-              this.board.splice(this.clickedCards[i], 1, this.getRandomCard());
-              this.allCards.splice(this.allCards.indexOf(this.board[this.clickedCards[i]]), 1);
-              //this.redrawCardAfterSelcted(this.clickedCards[i], "red");
+              var newCard = this.getRandomCard();
+              newCard = this.getCardPosition(newCard, this.clickedCards[i])
+              this.drawCard(newCard, newCard.x_min, newCard.y_min, newCard.x_max, newCard.y_max)
+              this.board.splice(this.clickedCards[i], 1, newCard);
             }
-            this.findAllSets();
-            this.pointsForCurrentSet = 100; // Reset the Points for one Set
-            // TODO: Only redraw the selected Cards
-            this.drawBoard(this.board);
-
-            this.showModal();
           } else {
-            this.pointsForCurrentSet = this.pointsForCurrentSet - 5
+            // When the last sets are taken from the Board and there are no cards left in the stock
+            for (var l = 0; l < 3; l++) {
+              this.board.splice(this.clickedCards[l], 1);
+              //this.redrawCardAfterSelcted(this.clickedCards[l], "red");
+            }
           }
-          // Reset Clicked Cards
-          for (var j = 0; j < this.clickedCards.length; j++) {
-            this.redrawCardAfterSelcted(this.clickedCards[j], "white");
+          this.findAllSets();
+          // When there is no Set left show a Button to reset the board
+          if (this.setCounter === 0) {
+            this.noMoreSets = true;
           }
-          this.clickedCards = []; // Reset the clicked Cards
+          // When the Game is over open the Modal for the play name
+          if (this.setCounter === 0 && this.allCards.length === 0) {
+              this.showModal();
+          }
+          this.pointsForCurrentSet = 100; // Reset the Points for one Set
+          // TODO: Only redraw the selected Cards
+        } else {
+          this.pointsForCurrentSet = this.pointsForCurrentSet - 5
         }
-      } else {
-        // TODO: Add a Counter when after 5 Seconds a wrong set or not enough cards are selected
-        this.addAndRedrawSelectedCard(this.x, this.y);
+        // Reset Clicked Cards
+        for (var j = 0; j < this.clickedCards.length; j++) {
+          this.redrawCardAfterSelcted(this.clickedCards[j], "white");
+        }
+        this.clickedCards = []; // Reset the clicked Cards
       }
     },
     getRandomCard: function() {
       const number = Math.floor(Math.random() * 100) % this.allCards.length;
-      return this.allCards[number];
+      var card = this.allCards[number];
+      this.allCards.splice(this.allCards.indexOf(card), 1);
+
+      return card;
+    },
+    getCardPosition(card, postionOnBoard) {
+      const heigth = (window.innerHeight / 2) / 4;
+      const width = window.innerWidth / 3.4;
+      switch (postionOnBoard) {
+        case 0:
+          card.setPosition(10, 0, width, heigth);
+          break;
+        case 1:
+          card.setPosition(width + 20, 0, width, heigth);
+          break;
+        case 2:
+          card.setPosition(width * 2 + 30, 0, width, heigth);
+          break;
+        case 3:
+          card.setPosition(10, heigth, width, heigth);
+          break;        
+        case 4:
+          card.setPosition(width + 20, heigth, width, heigth);
+          break;
+        case 5:
+          card.setPosition(width * 2 + 30, heigth, width, heigth);
+          break;
+        case 6:
+          card.setPosition(10, heigth * 2, width, heigth);
+          break;
+        case 7:
+          card.setPosition( width + 20, heigth * 2, width, heigth);
+          break;
+        case 8:
+          card.setPosition(width * 2 + 30, heigth * 2, width, heigth);
+          break;
+        case 9:
+          card.setPosition(10, heigth * 3, width, heigth);
+          break;
+        case 10:
+          card.setPosition(width + 20, heigth * 3, width, heigth);
+          break;
+        case 11:
+          card.setPosition(width * 2 + 30, heigth * 3, width, heigth);
+          break;
+      }
+      return card;
     },
     drawBoard: function(board) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      const heigth = (window.innerHeight / 2) / 4;
-      const width = window.innerWidth / 3.4;
-  
-      // First Row
-      this.drawCard(board[0], 10, 0, width, heigth);
-      this.drawCard(board[1], width + 20, 0, width, heigth);
-      this.drawCard(board[2], width * 2 + 30, 0, width, heigth);
-      // Second Row
-      this.drawCard(board[3], 10, heigth, width, heigth);
-      this.drawCard(board[4], width + 20, heigth, width, heigth);
-      this.drawCard(board[5], width * 2 + 30, heigth, width, heigth);
-      // Third Row
-      this.drawCard(board[6], 10, heigth * 2, width, heigth);
-      this.drawCard(board[7], width + 20, heigth * 2, width, heigth);
-      this.drawCard(board[8], width * 2 + 30, heigth * 2, width, heigth);
-      // Fourth Row
-      this.drawCard(board[9], 10, heigth * 3, width, heigth);
-      this.drawCard(board[10], width + 20, heigth * 3, width, heigth);
-      this.drawCard(board[11], width * 2 + 30, heigth * 3, width, heigth);
+
+      for (var i=0; i<12; i++) {
+        var card = this.getCardPosition(board[i], i);
+        this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max);
+      }
     },
     drawCard: function(card, dx, dy, dWidth, dHeight) {
       // Putting the image and its coordinates on the canvas
@@ -224,7 +277,7 @@ export default {
       function draw() {
         ctx.drawImage(img, dx, dy, dWidth , dHeight);
       }
-      // Height divided by 2 because the canvas takes half the screen
+      // TODO: Bug dont set the position twice
       card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy ));
     },
     startSetInterval: function () {
@@ -238,6 +291,8 @@ export default {
   },
   mounted: function() {
     this.createAllCards(); // Also Draws the First Board and Find all possible Sets
+    this.createNewBoard(); // Creates random board of cards
+
     this.startSetInterval();
     // TODO: Remove Resize Bug/ Change board Card coordinates// Or save it in an array
     // window.addEventListener('resize', this.drawBoard);
