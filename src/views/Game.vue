@@ -174,10 +174,12 @@ export default {
           this.points = this.points + this.pointsForCurrentSet; // Adds points for the correct Set
           if (this.allCards.length >= 3) {
             for (var i = 0; i < 3; i++) {
-              var newCard = this.getRandomCard();
-              newCard = this.getCardPosition(newCard, this.clickedCards[i])
-              this.drawCard(newCard, newCard.x_min, newCard.y_min, newCard.x_max, newCard.y_max)
-              this.board.splice(this.clickedCards[i], 1, newCard);
+              var newCard = this.getRandomCard(); // Get New Card
+              newCard = this.getCardPosition(newCard, this.clickedCards[i]) // Set Position
+              // TODO: Remove the Position and Draw Bug
+              newCard.setPosition(newCard.x_min, newCard.y_min, newCard.x_max + newCard.x_min, newCard.y_max + newCard.y_min);
+              this.board.splice(this.clickedCards[i], 1, newCard); // Set the new Card on the Board
+              this.redrawCardAfterSelcted(this.clickedCards[i], "white"); // Draw the new Card on the Board
             }
           } else {
             // When the last sets are taken from the Board and there are no cards left in the stock
@@ -196,16 +198,17 @@ export default {
               this.showModal();
           }
           this.pointsForCurrentSet = 100; // Reset the Points for one Set
-          // TODO: Only redraw the selected Cards
         } else {
-          this.pointsForCurrentSet = this.pointsForCurrentSet - 5
-        }
-        // Reset Clicked Cards
-        for (var j = 0; j < this.clickedCards.length; j++) {
-          this.redrawCardAfterSelcted(this.clickedCards[j], "white");
+          this.pointsForCurrentSet = this.pointsForCurrentSet - 5;
+          // Reset Clicked Cards when the selected cards are not a set
+          for (var j = 0; j < this.clickedCards.length; j++) {
+            this.redrawCardAfterSelcted(this.clickedCards[j], "white");
+          }
+          this.$log.info("Here")
         }
         this.clickedCards = []; // Reset the clicked Cards
       }
+      this.$log.info(this.allCards.length);
     },
     getRandomCard: function() {
       const number = Math.floor(Math.random() * 100) % this.allCards.length;
