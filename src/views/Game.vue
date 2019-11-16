@@ -204,11 +204,9 @@ export default {
           for (var j = 0; j < this.clickedCards.length; j++) {
             this.redrawCardAfterSelcted(this.clickedCards[j], "white");
           }
-          this.$log.info("Here")
         }
         this.clickedCards = []; // Reset the clicked Cards
       }
-      this.$log.info(this.allCards.length);
     },
     getRandomCard: function() {
       const number = Math.floor(Math.random() * 100) % this.allCards.length;
