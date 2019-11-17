@@ -218,6 +218,7 @@ export default {
     getCardPosition(card, postionOnBoard) {
       const heigth = (window.innerHeight / 2) / 4;
       const width = window.innerWidth / 3.4;
+      //const capBetweenCardsForWitdh = 1;
       switch (postionOnBoard) {
         case 0:
           card.setPosition(10, 0, width, heigth);
