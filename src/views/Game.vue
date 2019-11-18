@@ -91,7 +91,7 @@ export default {
       }
       return false;
     },
-    findAllSets(){
+    findAllSets() {
       this.setCounter = 0;
       for (var firstCard = 0; firstCard < this.board.length - 2; firstCard++) {
         for (var secondCard = firstCard + 1; secondCard < this.board.length - 1; secondCard++) {
@@ -101,6 +101,14 @@ export default {
            }
           }
         }
+      }
+      // When there is no Set left show a Button to reset the board
+      if (this.setCounter === 0) {
+        this.noMoreSets = true;
+      }
+      // When the Game is over open the Modal for the play name
+      if (this.setCounter === 0 && this.allCards.length === 0) {
+          this.showModal();
       }
     },
     resetBoard() {
@@ -189,14 +197,6 @@ export default {
             }
           }
           this.findAllSets();
-          // When there is no Set left show a Button to reset the board
-          if (this.setCounter === 0) {
-            this.noMoreSets = true;
-          }
-          // When the Game is over open the Modal for the play name
-          if (this.setCounter === 0 && this.allCards.length === 0) {
-              this.showModal();
-          }
           this.pointsForCurrentSet = 100; // Reset the Points for one Set
         } else {
           this.pointsForCurrentSet = this.pointsForCurrentSet - 5;
