@@ -216,6 +216,7 @@ export default {
       return card;
     },
     getCardPosition(card, postionOnBoard) {
+      // TODO: Change the layout to 4 * 3. 4 Rows 4 Columns on pc/tablet size
       const heigth = (window.innerHeight / 2) / 4;
       const width = window.innerWidth / 3.4;
       //const capBetweenCardsForWitdh = 1;
@@ -270,11 +271,11 @@ export default {
     drawCard: function(card, dx, dy, dWidth, dHeight) {
       // Putting the image and its coordinates on the canvas
       var ctx = this.ctx;
-      var cardNumber = card.color + '' + card.amount + '' + card.filling + '' + card.form
+      var cardNumber = card.color + '' + card.form + '' + card.filling + '' + card.amount
 
       let img = new Image(); // create new Image
 
-      img.src = require("../assets/" + cardNumber + ".png"); // load the image with a reletive Path
+      img.src = require("../assets/" + cardNumber + ".svg"); // load the image with a reletive Path
       img.addEventListener("load", draw, false); // Listener for Canvas img to load
       function draw() {
         ctx.drawImage(img, dx, dy, dWidth , dHeight);
