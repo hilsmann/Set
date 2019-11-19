@@ -96,7 +96,8 @@ export default {
       for (var firstCard = 0; firstCard < this.board.length - 2; firstCard++) {
         for (var secondCard = firstCard + 1; secondCard < this.board.length - 1; secondCard++) {
           for (var thirdCard = secondCard + 1; thirdCard < this.board.length; thirdCard++) {
-           if (this.checkThreeCardsForASet(firstCard, secondCard, thirdCard)) {
+           if (this.checkThreeCardsForASet(firstCard, secondCard, thirdCard) 
+              && this.board[firstCard].form !== 3 && this.board[secondCard].form !== 3 && this.board[thirdCard].form !== 3) {
              this.setCounter = this.setCounter + 1;
            }
           }
@@ -123,8 +124,8 @@ export default {
       for (var i = 0; i < 12; i++) {
         this.board.push(this.getRandomCard());
       }
-      this.drawBoard(this.board); // Draws the Board Cards
-      this.findAllSets(); // Finds all Sets in the First Board
+      this.drawBoard(); // Draws the Cards on the board
+      this.findAllSets(); // Finds all Sets on Board
     },
     createAllCards() {
       for (var color = 0; color < 3; color++) {
@@ -147,14 +148,16 @@ export default {
     },
     redrawCardAfterSelcted(cardIndex, color){
       var card = this.board[cardIndex];
-      this.ctx.clearRect(card.x_min - 10, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min);
+      // Clear the blue box Top and Bottom
+      this.ctx.clearRect(card.x_min + 1, card.y_min + 1, card.x_max - card.x_min, card.y_max - card.y_min);
+      this.ctx.clearRect(card.x_min - 1 , card.y_min - 1, card.x_max - card.x_min, card.y_max - card.y_min);
       this.ctx.fillStyle = color;
-      this.ctx.fillRect(card.x_min - 10, card.y_min, card.x_max - card.x_min + 20, card.y_max - card.y_min);
+      this.ctx.fillRect(card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min);
       this.drawCard(card, card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min);
     },
     addAndRedrawSelectedCard(x, y){
       var cardIndex = this.getClickedCard(x, y);
-      if (!this.clickedCards.includes(cardIndex)){
+      if (!this.clickedCards.includes(cardIndex) && this.board[cardIndex].form !== 3){
         this.clickedCards.push(cardIndex); // Add Card to the "checkForSet" Array
         this.redrawCardAfterSelcted(cardIndex,"blue");
       }
@@ -163,11 +166,11 @@ export default {
       var newScore = new Highscore(this.name, this.points);
       var allScores = [];
       if (JSON.parse(localStorage.getItem('set_game'))){
-        allScores = JSON.parse(localStorage.getItem('set_game'))
+        allScores = JSON.parse(localStorage.getItem('set_game'));
       }
       allScores.push(newScore)
       localStorage.setItem('set_game', JSON.stringify(allScores));
-      this.$router.push('highscore')
+      this.$router.push('highscore');
     },
     clickOnCanvas(event) {
       var rect = this.canvas.getBoundingClientRect();
@@ -189,11 +192,19 @@ export default {
               this.board.splice(this.clickedCards[i], 1, newCard); // Set the new Card on the Board
               this.redrawCardAfterSelcted(this.clickedCards[i], "white"); // Draw the new Card on the Board
             }
+            this.$log.info(this.board);
           } else {
             // When the last sets are taken from the Board and there are no cards left in the stock
             for (var l = 0; l < 3; l++) {
-              this.board.splice(this.clickedCards[l], 1);
-              //this.redrawCardAfterSelcted(this.clickedCards[l], "red");
+              var emptyCard = new Card(3,3,3,3); // Get New Card
+              // TODO: Remove the last set bug
+              emptyCard = this.getCardPosition(emptyCard, this.clickedCards[l]) // Set Position
+              emptyCard.setPosition(emptyCard.x_min, emptyCard.y_min, emptyCard.x_max, emptyCard.y_max);
+              this.ctx.clearRect(emptyCard.x_min + 1, emptyCard.y_min + 1, emptyCard.x_max, emptyCard.y_max);
+              this.ctx.clearRect(emptyCard.x_min - 1 , emptyCard.y_min - 1, emptyCard.x_max, emptyCard.y_max);
+              this.ctx.fillStyle = "white";
+              this.ctx.fillRect(emptyCard.x_min, emptyCard.y_min, emptyCard.x_max, emptyCard.y_max);
+              this.board.splice(this.clickedCards[l], 1, emptyCard); // Set the new Card on the Board
             }
           }
           this.findAllSets();
@@ -216,55 +227,53 @@ export default {
       return card;
     },
     getCardPosition(card, postionOnBoard) {
-      // TODO: Change the layout to 4 * 3. 4 Rows 4 Columns on pc/tablet size
       const heigth = (window.innerHeight / 2) / 4;
-      const width = window.innerWidth / 3.4;
-      //const capBetweenCardsForWitdh = 1;
+      const width = window.innerWidth / 3;
       switch (postionOnBoard) {
         case 0:
-          card.setPosition(10, 0, width, heigth);
+          card.setPosition(0, 0, width, heigth);
           break;
         case 1:
-          card.setPosition(width + 20, 0, width, heigth);
+          card.setPosition(width, 0, width, heigth);
           break;
         case 2:
-          card.setPosition(width * 2 + 30, 0, width, heigth);
+          card.setPosition(width * 2, 0, width, heigth);
           break;
         case 3:
-          card.setPosition(10, heigth, width, heigth);
+          card.setPosition(0, heigth, width, heigth);
           break;        
         case 4:
-          card.setPosition(width + 20, heigth, width, heigth);
+          card.setPosition(width, heigth, width, heigth);
           break;
         case 5:
-          card.setPosition(width * 2 + 30, heigth, width, heigth);
+          card.setPosition(width * 2, heigth, width, heigth);
           break;
         case 6:
-          card.setPosition(10, heigth * 2, width, heigth);
+          card.setPosition(0, heigth * 2, width, heigth);
           break;
         case 7:
-          card.setPosition( width + 20, heigth * 2, width, heigth);
+          card.setPosition(width, heigth * 2, width, heigth);
           break;
         case 8:
-          card.setPosition(width * 2 + 30, heigth * 2, width, heigth);
+          card.setPosition(width * 2, heigth * 2, width, heigth);
           break;
         case 9:
-          card.setPosition(10, heigth * 3, width, heigth);
+          card.setPosition(0, heigth * 3, width, heigth);
           break;
         case 10:
-          card.setPosition(width + 20, heigth * 3, width, heigth);
+          card.setPosition(width, heigth * 3, width, heigth);
           break;
         case 11:
-          card.setPosition(width * 2 + 30, heigth * 3, width, heigth);
+          card.setPosition(width * 2, heigth * 3, width, heigth);
           break;
       }
       return card;
     },
-    drawBoard: function(board) {
+    drawBoard: function() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
       for (var i=0; i<12; i++) {
-        var card = this.getCardPosition(board[i], i);
+        var card = this.getCardPosition(this.board[i], i);
         this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max);
       }
     },
@@ -298,7 +307,7 @@ export default {
 
     this.startSetInterval();
     // TODO: Remove Resize Bug/ Change board Card coordinates// Or save it in an array
-    // window.addEventListener('resize', this.drawBoard);
+    //window.addEventListener('resize', this.drawBoard);
   },
   computed: {
     canvas: function () {
