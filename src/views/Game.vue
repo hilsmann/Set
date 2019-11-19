@@ -157,9 +157,9 @@ export default {
     },
     addAndRedrawSelectedCard(x, y){
       var cardIndex = this.getClickedCard(x, y);
-      if (!this.clickedCards.includes(cardIndex) && this.board[cardIndex].form !== 3){
+      if (!this.clickedCards.includes(cardIndex)) {
         this.clickedCards.push(cardIndex); // Add Card to the "checkForSet" Array
-        this.redrawCardAfterSelcted(cardIndex,"blue");
+        this.redrawCardAfterSelcted(cardIndex, "blue");
       }
     },
     saveScore() {
@@ -187,30 +187,26 @@ export default {
             for (var i = 0; i < 3; i++) {
               var newCard = this.getRandomCard(); // Get New Card
               newCard = this.getCardPosition(newCard, this.clickedCards[i]) // Set Position
-              // TODO: Remove the Position and Draw Bug
               newCard.setPosition(newCard.x_min, newCard.y_min, newCard.x_max + newCard.x_min, newCard.y_max + newCard.y_min);
               this.board.splice(this.clickedCards[i], 1, newCard); // Set the new Card on the Board
               this.redrawCardAfterSelcted(this.clickedCards[i], "white"); // Draw the new Card on the Board
             }
-            this.$log.info(this.board);
           } else {
             // When the last sets are taken from the Board and there are no cards left in the stock
             for (var l = 0; l < 3; l++) {
-              var emptyCard = new Card(3,3,3,3); // Get New Card
-              // TODO: Remove the last set bug
+              var emptyCard = new Card(3, 3, 3, 3); // Create empty Card
               emptyCard = this.getCardPosition(emptyCard, this.clickedCards[l]) // Set Position
-              emptyCard.setPosition(emptyCard.x_min, emptyCard.y_min, emptyCard.x_max, emptyCard.y_max);
-              this.ctx.clearRect(emptyCard.x_min + 1, emptyCard.y_min + 1, emptyCard.x_max, emptyCard.y_max);
-              this.ctx.clearRect(emptyCard.x_min - 1 , emptyCard.y_min - 1, emptyCard.x_max, emptyCard.y_max);
-              this.ctx.fillStyle = "white";
-              this.ctx.fillRect(emptyCard.x_min, emptyCard.y_min, emptyCard.x_max, emptyCard.y_max);
+              emptyCard.setPosition(emptyCard.x_min, emptyCard.y_min, emptyCard.x_max + emptyCard.x_min, emptyCard.y_max + emptyCard.y_min);
               this.board.splice(this.clickedCards[l], 1, emptyCard); // Set the new Card on the Board
+              this.redrawCardAfterSelcted(this.clickedCards[l], "white"); // Draw the new Card on the Board
             }
           }
           this.findAllSets();
           this.pointsForCurrentSet = 100; // Reset the Points for one Set
         } else {
-          this.pointsForCurrentSet = this.pointsForCurrentSet - 5;
+          if (this.pointsForCurrentSet >= 5) {
+            this.pointsForCurrentSet = this.pointsForCurrentSet - 5;
+          }
           // Reset Clicked Cards when the selected cards are not a set
           for (var j = 0; j < this.clickedCards.length; j++) {
             this.redrawCardAfterSelcted(this.clickedCards[j], "white");
@@ -307,7 +303,7 @@ export default {
 
     this.startSetInterval();
     // TODO: Remove Resize Bug/ Change board Card coordinates// Or save it in an array
-    //window.addEventListener('resize', this.drawBoard);
+    window.addEventListener('resize', this.drawBoard);
   },
   computed: {
     canvas: function () {
