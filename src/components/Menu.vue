@@ -2,8 +2,10 @@
   <div>
     <b-button-group class="group"  vertical>
       <b-button block to="/game" variant="success">Game</b-button>
+      <b-button block to="/highscore" variant="outline-info">Highscore</b-button>
+      <b-button block to="/manual" variant="outline-dark">Manual</b-button>
       <b-button block to="/settings" variant="primary">Settings</b-button>
-      <b-button block to="/highscore" variant="info">Highscore</b-button>
+      <b-button block to="/developer" variant="outline-danger">Developer</b-button>
     </b-button-group>
   </div>
 </template>
