@@ -153,15 +153,12 @@ export default {
     },
     redrawCardAfterSelcted(cardIndex, color){
       var card = this.board[cardIndex];
-      // Clear the blue box Top and Bottom
-      this.ctx.clearRect(card.x_min + 1, card.y_min + 1, card.x_max - card.x_min, card.y_max - card.y_min);
-      this.ctx.clearRect(card.x_min - 1 , card.y_min - 1, card.x_max - card.x_min, card.y_max - card.y_min);
-      this.ctx.fillStyle = color;
-      this.ctx.fillRect(card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min);
-      this.drawCard(card, card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min);
+      card = this.getCardPosition(card, cardIndex) // Set Position
+      card.setPosition(card.x_min, card.y_min, card.x_max + card.x_min, card.y_max + card.y_min);
+      this.drawCard(card, card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min, color);
     },
-    addAndRedrawSelectedCard(x, y){
-      var cardIndex = this.getClickedCard(x, y);
+    addAndRedrawSelectedCard(){
+      var cardIndex = this.getClickedCard(this.x, this.y);
       if (!this.clickedCards.includes(cardIndex)) {
         this.clickedCards.push(cardIndex); // Add Card to the "checkForSet" Array
         this.redrawCardAfterSelcted(cardIndex, "blue");
@@ -181,7 +178,7 @@ export default {
       var rect = this.canvas.getBoundingClientRect();
       this.x = event.clientX - rect.left;
       this.y = event.clientY - rect.top;
-      this.addAndRedrawSelectedCard(this.x, this.y);
+      this.addAndRedrawSelectedCard();
       // TODO: Add a Counter when after 5 Seconds a wrong set or not enough cards are selected
       // When three Cards are Selected check them
       // https://bootstrap-vue.js.org/docs/components/progress/#backgrounds
@@ -192,19 +189,13 @@ export default {
           if (this.allCards.length >= 3) {
             for (var i = 0; i < 3; i++) {
               var newCard = this.getRandomCard(); // Get New Card
-              newCard = this.getCardPosition(newCard, this.clickedCards[i]) // Set Position
-              newCard.setPosition(newCard.x_min, newCard.y_min, newCard.x_max + newCard.x_min, newCard.y_max + newCard.y_min);
               this.board.splice(this.clickedCards[i], 1, newCard); // Set the new Card on the Board
-              this.redrawCardAfterSelcted(this.clickedCards[i], "white"); // Draw the new Card on the Board
             }
           } else {
             // When the last sets are taken from the Board and there are no cards left in the stock
             for (var l = 0; l < 3; l++) {
               var emptyCard = new Card(3, 3, 3, 3); // Create empty Card
-              emptyCard = this.getCardPosition(emptyCard, this.clickedCards[l]) // Set Position
-              emptyCard.setPosition(emptyCard.x_min, emptyCard.y_min, emptyCard.x_max + emptyCard.x_min, emptyCard.y_max + emptyCard.y_min);
               this.board.splice(this.clickedCards[l], 1, emptyCard); // Set the new Card on the Board
-              this.redrawCardAfterSelcted(this.clickedCards[l], "white"); // Draw the new Card on the Board
             }
           }
           this.findAllSets();
@@ -213,10 +204,10 @@ export default {
           if (this.pointsForCurrentSet >= 5) {
             this.pointsForCurrentSet = this.pointsForCurrentSet - 5;
           }
-          // Reset Clicked Cards when the selected cards are not a set
-          for (var j = 0; j < this.clickedCards.length; j++) {
-            this.redrawCardAfterSelcted(this.clickedCards[j], "white");
-          }
+        }
+        // Reset Clicked Cards when the selected cards are not a set
+        for (var j = 0; j < this.clickedCards.length; j++) {
+          this.redrawCardAfterSelcted(this.clickedCards[j], "white");
         }
         this.clickedCards = []; // Reset the clicked Cards
       }
@@ -276,23 +267,27 @@ export default {
 
       for (var i=0; i<12; i++) {
         var card = this.getCardPosition(this.board[i], i);
-        this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max);
+        this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max, "white");
       }
     },
-    drawCard: function(card, dx, dy, dWidth, dHeight) {
+    drawCard: function(card, dx, dy, dWidth, dHeight, color) {
       // Putting the image and its coordinates on the canvas
+      const cardNumber = card.color + '' + card.form + '' + card.filling + '' + card.amount
       var ctx = this.ctx;
-      var cardNumber = card.color + '' + card.form + '' + card.filling + '' + card.amount
 
       let img = new Image(); // create new Image
 
-      img.src = require("../assets/" + cardNumber + ".svg"); // load the image with a reletive Path
-      img.addEventListener("load", draw, false); // Listener for Canvas img to load
-      function draw() {
+      img.onload = function () {
+        // Clear the blue box Top and Bottom
+        ctx.fillStyle = color;
+        ctx.clearRect(dx + 1, dy + 1, dWidth, dHeight);
+        ctx.clearRect(dx - 1, dy - 1, dWidth, dHeight);
+        ctx.fillRect(dx, dy, dWidth, dHeight);
         ctx.drawImage(img, dx, dy, dWidth , dHeight);
+        card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy ));
       }
+      img.src = require("../assets/" + cardNumber + ".svg"); // load the image with a reletive Path
       // TODO: Bug dont set the position twice
-      card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy ));
     },
     startSetInterval: function () {
       const self = this
