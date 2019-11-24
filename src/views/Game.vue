@@ -1,9 +1,14 @@
 <template>
   <div>
-    <p>Amount of Sets {{setCounter}} </p>
-    <p>Points: {{points}}</p>
-    <!-- TODO: more distance to the canvas-->
-    <b-button v-if="noMoreSets" class="mt-3" variant="warning" block @click="resetBoard">shuffle board</b-button>
+    <b-container>
+      <b-row>
+        <b-col>Amount of Sets {{setCounter}} </b-col>
+        <b-col>Points: {{points}}</b-col>
+      </b-row>
+      <b-row>
+        <b-col><b-button v-if="noMoreSets" class="mt-3" variant="warning" block @click="resetBoard">shuffle board</b-button> </b-col>
+      </b-row>
+    </b-container>
     <canvas
       @click="clickOnCanvas($event)"
       :width="canvas_width"
@@ -179,6 +184,7 @@ export default {
       this.addAndRedrawSelectedCard(this.x, this.y);
       // TODO: Add a Counter when after 5 Seconds a wrong set or not enough cards are selected
       // When three Cards are Selected check them
+      // https://bootstrap-vue.js.org/docs/components/progress/#backgrounds
       if (this.clickedCards.length === 3) {
         // When a Set is found replace the old Cards with new Cards and redraw the board
         if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
