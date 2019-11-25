@@ -277,6 +277,7 @@ export default {
 
       let img = new Image(); // create new Image
 
+      img.src = require("../assets/cards_svg/" + cardNumber + ".svg"); // load the image with a reletive Path
       img.onload = function () {
         // Clear the blue box Top and Bottom
         ctx.fillStyle = color;
@@ -286,7 +287,6 @@ export default {
         ctx.drawImage(img, dx, dy, dWidth , dHeight);
         card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy ));
       }
-      img.src = require("../assets/" + cardNumber + ".svg"); // load the image with a reletive Path
       // TODO: Bug dont set the position twice
     },
     startSetInterval: function () {
