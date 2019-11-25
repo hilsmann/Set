@@ -37,11 +37,12 @@
 
 <script>
 class Card {
-  constructor(color, amount, filling, form) {
+  constructor(color, amount, filling, form, image) {
     this.color = color;
     this.amount = amount;
     this.filling = filling;
     this.form = form;
+    this.image = image
   }
   setPosition(x_min, y_min, x_max, y_max) {
     this.x_min = x_min;
@@ -137,7 +138,9 @@ export default {
         for (var form = 0; form < 3; form++) {
           for (var filling = 0; filling < 3; filling++) {
             for (var amount = 1; amount < 4; amount++) {
-              this.allCards.push(new Card(color, amount, filling, form));
+              let img = new Image(); // create new Image
+              img.src = require("@/assets/cards_svg/"+ color + '' + form + '' + filling + '' + amount +".svg");
+              this.allCards.push(new Card(color, amount, filling, form, img));
             }
           }
         }
@@ -194,7 +197,9 @@ export default {
           } else {
             // When the last sets are taken from the Board and there are no cards left in the stock
             for (var l = 0; l < 3; l++) {
-              var emptyCard = new Card(3, 3, 3, 3); // Create empty Card
+              let img = new Image(); // create new Image
+              img.src = require("@/assets/cards_svg/3333.svg");
+              var emptyCard = new Card(3, 3, 3, 3, img); // Create empty Card
               this.board.splice(this.clickedCards[l], 1, emptyCard); // Set the new Card on the Board
             }
           }
@@ -275,19 +280,16 @@ export default {
       const cardNumber = card.color + '' + card.form + '' + card.filling + '' + card.amount
       var ctx = this.ctx;
 
-      let img = new Image(); // create new Image
-
-      img.src = require("@/assets/cards_svg/" + cardNumber + ".svg"); // load the image with a reletive Path
-      img.onload = function () {
+      card.image.src = require("@/assets/cards_svg/" + cardNumber + ".svg"); // load the image
+      card.image.onload = function () {
         // Clear the blue box Top and Bottom
         ctx.fillStyle = color;
         ctx.clearRect(dx + 1, dy + 1, dWidth, dHeight);
         ctx.clearRect(dx - 1, dy - 1, dWidth, dHeight);
         ctx.fillRect(dx, dy, dWidth, dHeight);
-        ctx.drawImage(img, dx, dy, dWidth , dHeight);
+        ctx.drawImage(card.image, dx, dy, dWidth , dHeight);
         card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy ));
       }
-      // TODO: Bug dont set the position twice
     },
     startSetInterval: function () {
       const self = this
