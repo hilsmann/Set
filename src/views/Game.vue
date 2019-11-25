@@ -277,7 +277,7 @@ export default {
 
       let img = new Image(); // create new Image
 
-      img.src = require("../assets/cards_svg/" + cardNumber + ".svg"); // load the image with a reletive Path
+      img.src = require("@/assets/cards_svg/" + cardNumber + ".svg"); // load the image with a reletive Path
       img.onload = function () {
         // Clear the blue box Top and Bottom
         ctx.fillStyle = color;
