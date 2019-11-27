@@ -6,28 +6,29 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import router from './router'
 
 import VueLogger from 'vuejs-logger';
+
 const isProduction = process.env.NODE_ENV === 'production';
- 
+
 const options = {
     isEnabled: true,
-    logLevel : isProduction ? 'error' : 'debug',
-    stringifyArguments : false,
-    showLogLevel : true,
-    showMethodName : true,
+    logLevel: isProduction ? 'error' : 'debug',
+    stringifyArguments: false,
+    showLogLevel: true,
+    showMethodName: true,
     separator: '|',
     showConsoleColors: true,
     publicPath: process.env.NODE_ENV === 'production'
-    ? '/Set/'
-    : '/'
+        ? '/Set/'
+        : '/'
 };
- 
+
 Vue.use(VueLogger, options);
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
-Vue.use(BootstrapVue)
+Vue.use(BootstrapVue);
 
 new Vue({
-  router,
-  render: h => h(App)
-}).$mount('#app')
+    router,
+    render: h => h(App)
+}).$mount('#app');

@@ -1,55 +1,55 @@
 <template>
-  <div>
-    <b-table
-      striped
-      hover
-      :items="allScores"
-      :fields="fields"
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
-      :current-page="currentPage"
-      :per-page="perPage"
-      id="my-table"
-    ></b-table>
-    <b-pagination
-      class="group"
-      v-model="currentPage"
-      :per-page="perPage"
-      :total-rows="rows"
-      align="fill"
-      aria-controls="my-table"
-    ></b-pagination>
-  </div>
+    <div>
+        <b-table
+                striped
+                hover
+                :items="allScores"
+                :fields="fields"
+                :sort-by.sync="sortBy"
+                :sort-desc.sync="sortDesc"
+                :current-page="currentPage"
+                :per-page="perPage"
+                id="my-table"
+        />
+        <b-pagination
+                class="group"
+                v-model="currentPage"
+                :per-page="perPage"
+                :total-rows="rows"
+                align="fill"
+                aria-controls="my-table"
+        />
+    </div>
 </template>
 
 <script>
-export default {
-  name: "Highscore",
-  data() {
-    return {
-      perPage: 5,
-      currentPage: 1,
-      fields: [
-        { key: "score", sortable: true },
-        { key: "name", sortable: true }
-      ],
-      allScores: JSON.parse(localStorage.getItem("set_game")),
-      sortBy: "score",
-      sortDesc: true
+    export default {
+        name: "Highscore",
+        data() {
+            return {
+                perPage: 5,
+                currentPage: 1,
+                fields: [
+                    {key: "score", sortable: true},
+                    {key: "name", sortable: true}
+                ],
+                allScores: JSON.parse(localStorage.getItem("set_game")),
+                sortBy: "score",
+                sortDesc: true
+            };
+        },
+        computed: {
+            rows() {
+                return this.allScores.length;
+            }
+        },
+        props: {}
     };
-  },
-  computed: {
-    rows() {
-      return this.allScores.length;
-    }
-  },
-  props: {}
-};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.group {
-  width: 100%;
-}
+    .group {
+        width: 100%;
+    }
 </style>

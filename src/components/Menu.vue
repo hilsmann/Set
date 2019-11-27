@@ -1,25 +1,25 @@
 <template>
-  <div>
-    <b-button-group class="group"  vertical>
-      <b-button block to="/game" variant="success">Game</b-button>
-      <b-button block to="/highscore" variant="outline-info">Highscore</b-button>
-      <b-button block to="/manual" variant="outline-dark">Manual</b-button>
-      <b-button block to="/settings" variant="primary">Settings</b-button>
-      <b-button block to="/developer" variant="outline-danger">Developer</b-button>
-    </b-button-group>
-  </div>
+    <div>
+        <b-button-group class="group" vertical>
+            <b-button block to="/game" variant="success">Game</b-button>
+            <b-button block to="/highscore" variant="outline-info">Highscore</b-button>
+            <b-button block to="/manual" variant="outline-dark">Manual</b-button>
+            <b-button block to="/settings" variant="primary">Settings</b-button>
+            <b-button block to="/developer" variant="outline-danger">Developer</b-button>
+        </b-button-group>
+    </div>
 </template>
 
 <script>
-export default {
-  name: "Menu",
-  props: {}
-};
+    export default {
+        name: "Menu",
+        props: {}
+    };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.group{
-  width: 100%;
-}
+    .group {
+        width: 100%;
+    }
 </style>
