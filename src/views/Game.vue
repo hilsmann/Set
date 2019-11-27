@@ -1,13 +1,18 @@
 <template>
     <div>
-        <b-container>
+        <b-container class="container">
             <b-row>
                 <b-col>Amount of Sets {{setCounter}}</b-col>
                 <b-col>Points: {{points}}</b-col>
             </b-row>
             <b-row>
                 <b-col>
-                    <b-button v-if="noMoreSets" class="mt-3" variant="warning" block @click="resetBoard">shuffle board
+                    <b-progress height="11px" :max=5 :value="clickedCardCounter" variant="success" key="success"/>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col>
+                    <b-button v-if="noMoreSets" size="sm" class="mt-3" variant="warning" block @click="resetBoard">shuffle board
                     </b-button>
                 </b-col>
             </b-row>
@@ -78,7 +83,9 @@
                 y: 0,
                 points: 0,
                 pointsForCurrentSet: 100,
-                noMoreSets: false
+                noMoreSets: false,
+                clickedCardCounter: 5,
+                intervalID: ''
             };
         },
         methods: {
@@ -180,10 +187,16 @@
                 this.x = event.clientX - rect.left;
                 this.y = event.clientY - rect.top;
                 this.addAndRedrawSelectedCard();
-                // TODO: Add a Counter when after 5 Seconds a wrong set or not enough cards are selected
-                // When three Cards are Selected check them
-                // https://bootstrap-vue.js.org/docs/components/progress/#backgrounds
+
+                // Starts an Interval when an Card is clicked. So the User has only 5 Seconds to click the other cards
+                if (this.clickedCardCounter === 5) {
+                    this.clickedCardInterval();
+                    this.clickedCardCounter = this.clickedCardCounter - 0.1;
+                }
+
                 if (this.clickedCards.length === 3) {
+                    clearInterval(this.intervalID);
+                    this.clickedCardCounter = 5; // Resets the clickedCard Interval
                     // When a Set is found replace the old Cards with new Cards and redraw the board
                     if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
                         this.points = this.points + this.pointsForCurrentSet; // Adds points for the correct Set
@@ -204,16 +217,17 @@
                         this.findAllSets();
                         this.pointsForCurrentSet = 100; // Reset the Points for one Set
                     } else {
-                        if (this.pointsForCurrentSet >= 5) {
-                            this.pointsForCurrentSet = this.pointsForCurrentSet - 5;
-                        }
+                        this.removePointsForCurrentSet();
                     }
                     // Reset Clicked Cards when the selected cards are not a set
-                    for (let j = 0; j < this.clickedCards.length; j++) {
-                        this.redrawCardAfterSelcted(this.clickedCards[j], "white");
-                    }
-                    this.clickedCards = []; // Reset the clicked Cards
+                    this.resetClickedCards();
                 }
+            },
+            resetClickedCards: function () {
+                for (let j = 0; j < this.clickedCards.length; j++) {
+                    this.redrawCardAfterSelcted(this.clickedCards[j], "white");
+                }
+                this.clickedCards = []; // Reset the clicked Cards
             },
             getRandomCard: function () {
                 const number = Math.floor(Math.random() * 100) % this.allCards.length;
@@ -288,13 +302,31 @@
                     card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy));
                 }
             },
+            removePointsForCurrentSet() {
+                if (this.pointsForCurrentSet >= 5) {
+                    this.pointsForCurrentSet = this.pointsForCurrentSet - 5;
+                }
+            },
             startSetInterval: function () {
                 const self = this;
                 setInterval(function () {
                     if (self.pointsForCurrentSet - 1 >= 0) {
-                        self.pointsForCurrentSet = self.pointsForCurrentSet - 1
+                        self.pointsForCurrentSet = self.pointsForCurrentSet - 1;
                     }
                 }, 1000);
+            },
+            clickedCardInterval: function () {
+                const self = this;
+                this.intervalID = setInterval(function () {
+                    if (self.clickedCardCounter - 0.1 >= 0) {
+                        self.clickedCardCounter = self.clickedCardCounter - 0.1;
+                    } else {
+                        self.clickedCardCounter = 5;
+                        clearInterval(self.intervalID);
+                        self.removePointsForCurrentSet();
+                        self.resetClickedCards();
+                    }
+                }, 100);
             },
         },
         mounted: function () {
@@ -303,7 +335,12 @@
 
             this.startSetInterval();
             // TODO: Remove Resize Bug/ Change board Card coordinates// Or save it in an array
-            window.addEventListener('resize', this.drawBoard);
+            const self = this;
+            window.addEventListener("resize", function () {
+                this.canvas_width = window.innerWidth / 7;
+                this.canvas_height = window.innerHeight / 2;
+                self.drawBoard();
+            });
         },
         computed: {
             canvas: function () {
@@ -325,6 +362,10 @@
         position: absolute;
         overflow: hidden;
         bottom: 0%;
+        width: 100%;
+        height: 50%;
+    }
+    .container {
         width: 100%;
         height: 50%;
     }
