@@ -84,7 +84,7 @@
                 points: 0,
                 pointsForCurrentSet: 100,
                 noMoreSets: false,
-                clickedCardCounter: 5,
+                clickedCardCounter: 0,
                 intervalID: ''
             };
         },
@@ -225,7 +225,7 @@
             },
             resetClickedCards: function () {
                 for (let j = 0; j < this.clickedCards.length; j++) {
-                    this.redrawCardAfterSelcted(this.clickedCards[j], "white");
+                    this.redrawCardAfterSelcted(this.clickedCards[j], "#d9d9d9");
                 }
                 this.clickedCards = []; // Reset the clicked Cards
             },
@@ -283,7 +283,7 @@
 
                 for (let i = 0; i < 12; i++) {
                     const card = this.getCardPosition(this.board[i], i);
-                    this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max, "white");
+                    this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max, "#d9d9d9");
                 }
             },
             drawCard: function (card, dx, dy, dWidth, dHeight, color) {
@@ -357,7 +357,7 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
     canvas {
-        background-color: white;
+        background-color: #d9d9d9;
         display: block;
         position: absolute;
         overflow: hidden;
