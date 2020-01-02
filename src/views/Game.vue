@@ -2,8 +2,8 @@
     <div>
         <b-container class="container">
             <b-row>
-                <b-col>Amount of Sets {{setCounter}}</b-col>
-                <b-col>Points: {{points}}</b-col>
+                <b-col>Amount of Sets <b-badge pill variant="dark">{{setCounter}}</b-badge></b-col>
+                <b-col>Points <b-badge pill variant="dark">{{points}}</b-badge></b-col>
             </b-row>
             <b-row>
                 <b-col>
@@ -286,6 +286,8 @@
             },
             drawBoard: function () {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.$log.info(this.canvas.width);
+                this.$log.info(this.canvas.height);
 
                 for (let i = 0; i < 12; i++) {
                     const card = this.getCardPosition(this.board[i], i);
@@ -340,11 +342,10 @@
             this.createNewBoard(); // Creates random board of cards
 
             this.startSetInterval();
-            // TODO: Remove Resize Bug/ Change board Card coordinates// Or save it in an array
             const self = this;
             window.addEventListener("resize", function () {
-                this.canvas_width = window.innerWidth / 7;
-                this.canvas_height = window.innerHeight / 2;
+                self.canvas.width = window.innerWidth;
+                self.canvas.height = window.innerHeight / 2;
                 self.drawBoard();
             });
         },
