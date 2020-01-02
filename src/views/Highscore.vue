@@ -43,7 +43,6 @@
         },
         computed: {
             rows() {
-                //  // set key1
                 return this.allScores.length;
             }
         },

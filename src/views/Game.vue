@@ -31,11 +31,11 @@
                         label-for="name-input"
                         invalid-feedback="Name is required"
                 >
-                    <b-form-input
-                            id="name-input"
-                            v-model="name"
-                            required
-                    />
+                <b-form-input
+                        id="name-input"
+                        v-model="name"
+                        required
+                />
                 </b-form-group>
             </form>
             <b-button class="mt-3" variant="success" block @click="saveScore">save</b-button>
@@ -70,11 +70,14 @@
         }
     }
 
+    const ls = new SecureLS();
+
     export default {
         name: "Game",
         data() {
             return {
-                name: '',
+                savedSettings: ls.get('settings'),
+                name: ls.get('settings') ? ls.get('settings')[0]['playername'] : '',
                 setCounter: 0,
                 allCards: [],
                 board: [],
@@ -176,7 +179,6 @@
             },
             saveScore() {
                 const newScore = new Highscore(this.name, this.points);
-                const ls = new SecureLS();
                 let allScores = [];
                 
                 if (ls.get("set_game")) {
@@ -353,8 +355,7 @@
             ctx: function () {
                 return this.canvas.getContext('2d');
             }
-        },
-        props: {}
+        }
     };
 </script>
 
