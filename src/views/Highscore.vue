@@ -23,6 +23,9 @@
 </template>
 
 <script>
+    import SecureLS from 'secure-ls';
+
+    const ls = new SecureLS();
     export default {
         name: "Highscore",
         data() {
@@ -33,13 +36,14 @@
                     {key: "score", sortable: true},
                     {key: "name", sortable: true}
                 ],
-                allScores: JSON.parse(localStorage.getItem("set_game")),
+                allScores: ls.get('set_game') ? ls.get('set_game') : [],
                 sortBy: "score",
                 sortDesc: true
             };
         },
         computed: {
             rows() {
+                //  // set key1
                 return this.allScores.length;
             }
         },

@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="centeredButtons">
         <b-button-group class="group" vertical>
             <b-button block to="/game" variant="success">Game</b-button>
             <b-button block to="/highscore" variant="outline-primary">Highscore</b-button>
@@ -12,8 +12,7 @@
 
 <script>
     export default {
-        name: "Menu",
-        props: {}
+        name: "Menu"
     };
 </script>
 
@@ -21,5 +20,10 @@
 <style scoped>
     .group {
         width: 100%;
+    }
+    .centeredButtons{
+        margin-left: 20%;
+        margin-right: 20%;
+        position: relative;
     }
 </style>

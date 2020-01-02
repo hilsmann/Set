@@ -44,6 +44,8 @@
 </template>
 
 <script>
+    import SecureLS from 'secure-ls';
+
     class Card {
         constructor(color, amount, filling, form, image) {
             this.color = color;
@@ -84,7 +86,7 @@
                 points: 0,
                 pointsForCurrentSet: 100,
                 noMoreSets: false,
-                clickedCardCounter: 0,
+                clickedCardCounter: 5, // Full Processbar at the beginning
                 intervalID: ''
             };
         },
@@ -174,12 +176,14 @@
             },
             saveScore() {
                 const newScore = new Highscore(this.name, this.points);
+                const ls = new SecureLS();
                 let allScores = [];
-                if (JSON.parse(localStorage.getItem('set_game'))) {
-                    allScores = JSON.parse(localStorage.getItem('set_game'));
+                
+                if (ls.get("set_game")) {
+                    allScores = ls.get("set_game");
                 }
                 allScores.push(newScore);
-                localStorage.setItem('set_game', JSON.stringify(allScores));
+                ls.set("set_game", allScores);
                 this.$router.push('highscore');
             },
             clickOnCanvas(event) {
