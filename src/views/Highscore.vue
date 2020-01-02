@@ -34,7 +34,8 @@
                 currentPage: 1,
                 fields: [
                     {key: "score", sortable: true},
-                    {key: "name", sortable: true}
+                    {key: "name", sortable: true},
+                    {key: "gameMode", sortable: true},
                 ],
                 allScores: ls.get('set_game') ? ls.get('set_game') : [],
                 sortBy: "score",

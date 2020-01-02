@@ -2,6 +2,7 @@
     <div>
         <b-container class="container">
             <b-row>
+                <b-col>{{gameMode}}</b-col>
                 <b-col>Amount of Sets <b-badge pill variant="dark">{{setCounter}}</b-badge></b-col>
                 <b-col>Points <b-badge pill variant="dark">{{points}}</b-badge></b-col>
             </b-row>
@@ -64,9 +65,10 @@
     }
 
     class Highscore {
-        constructor(name, score) {
+        constructor(name, score, gameMode) {
             this.name = name;
             this.score = score;
+            this.gameMode = gameMode
         }
     }
 
@@ -77,6 +79,7 @@
         data() {
             return {
                 savedSettings: ls.get('settings'),
+                gameMode: ls.get('settings') ? ls.get('settings')[0]['gameMode'] : '', 
                 name: ls.get('settings') ? ls.get('settings')[0]['playername'] : '',
                 setCounter: 0,
                 allCards: [],
@@ -178,7 +181,8 @@
                 }
             },
             saveScore() {
-                const newScore = new Highscore(this.name, this.points);
+                const gameMode = ls.get('settings') ? ls.get('settings')[0]['gameMode'] : 'NormalMode';
+                const newScore = new Highscore(this.name, this.points, gameMode);
                 let allScores = [];
                 
                 if (ls.get("set_game")) {
@@ -286,8 +290,6 @@
             },
             drawBoard: function () {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.$log.info(this.canvas.width);
-                this.$log.info(this.canvas.height);
 
                 for (let i = 0; i < 12; i++) {
                     const card = this.getCardPosition(this.board[i], i);

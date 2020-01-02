@@ -2,6 +2,9 @@
   <div class="centeredButtons">
     <div class="mt-2">Your Playername is: {{ playername }}</div>
     <b-form-input v-model="playername" placeholder="Enter your name"></b-form-input>
+    <b-form-checkbox v-model="checked" name="check-button" switch size="lg">
+        switch game mode<b> {{ gameMode() }}</b>
+    </b-form-checkbox>
     <b-button pill class="saveButton" @click="saveSettings" variant="outline-primary">Save Settings</b-button>
   </div>
 </template>
@@ -15,11 +18,21 @@
         data() {
             return {
                 playername: ls.get('settings') ? ls.get('settings')[0]['playername'] : '',
+                checked: ls.get('settings') ? ls.get('settings')[0]['normalMode'] : false,
             }
         },
         methods: {
             saveSettings() {
-                ls.set("settings", [{playername: this.playername}]);
+                ls.set("settings", [{playername: this.playername, gameMode: this.gameMode(), normalMode: this.checked}]);
+            },
+            gameMode(){
+                var gameMode = ''
+                if (this.checked) {
+                    gameMode = 'HardMode';
+                } else {
+                    gameMode = 'NormalMode';
+                }
+                return gameMode;
             }
         }
     };
