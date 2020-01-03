@@ -24,6 +24,12 @@
         methods: {
             saveSettings() {
                 ls.set("settings", {playername: this.playername, gameMode: this.gameMode(), hardMode: this.checked});
+                this.$bvToast.toast('Successfully saved', {
+                    title: 'Settings',
+                    toaster: 'b-toaster-bottom-full',
+                    autoHideDelay: 3000,
+                    solid: true
+                });
             },
             gameMode(){
                 return (this.checked ? 'HardMode' : 'NormalMode');
