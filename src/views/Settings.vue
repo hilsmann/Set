@@ -17,22 +17,16 @@
         name: "Settings",
         data() {
             return {
-                playername: ls.get('settings') ? ls.get('settings')[0]['playername'] : '',
-                checked: ls.get('settings') ? ls.get('settings')[0]['normalMode'] : false,
+                playername: ls.get('settings') ? ls.get('settings')['playername'] : '',
+                checked: ls.get('settings') ? ls.get('settings')['hardMode'] : false,
             }
         },
         methods: {
             saveSettings() {
-                ls.set("settings", [{playername: this.playername, gameMode: this.gameMode(), normalMode: this.checked}]);
+                ls.set("settings", {playername: this.playername, gameMode: this.gameMode(), hardMode: this.checked});
             },
             gameMode(){
-                var gameMode = ''
-                if (this.checked) {
-                    gameMode = 'HardMode';
-                } else {
-                    gameMode = 'NormalMode';
-                }
-                return gameMode;
+                return (this.checked ? 'HardMode' : 'NormalMode');
             }
         }
     };

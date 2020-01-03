@@ -78,9 +78,9 @@
         name: "Game",
         data() {
             return {
-                savedSettings: ls.get('settings'),
-                gameMode: ls.get('settings') ? ls.get('settings')[0]['gameMode'] : '', 
-                name: ls.get('settings') ? ls.get('settings')[0]['playername'] : '',
+                hardMode: this.getSettings() ? this.getSettings()['hardMode'] : false,
+                gameMode: this.getSettings() ? this.getSettings()['gameMode'] : 'NormalMode', 
+                name: this.getSettings() ? this.getSettings()['playername'] : '',
                 setCounter: 0,
                 allCards: [],
                 board: [],
@@ -90,13 +90,33 @@
                 x: 0,
                 y: 0,
                 points: 0,
-                pointsForCurrentSet: 100,
+                pointsForCurrentSet: this.pointsForCurrentSetWithModes(),
+                removePointsCounter: this.removePointsWithModes(),
                 noMoreSets: false,
                 clickedCardCounter: 5, // Full Processbar at the beginning
-                intervalID: ''
+                intervalIdForClickedCard: '',
+                intervalIdForCurrentSetCounter: ''
             };
         },
         methods: {
+            getSettings() {
+                return ls.get('settings');
+            },
+            // Methods for NormalMode/HardMode Values
+            pointsForCurrentSetWithModes(){
+                if(this.getSettings()) {
+                    return (this.getSettings()['hardMode'] ? 150 : 100);
+                } else {
+                    return 100; // Default is NormalMode
+                }
+            },
+            removePointsWithModes() {
+                if(this.getSettings()) {
+                    return (this.getSettings()['hardMode'] ? 3 : 1);
+                } else {
+                    return 1; // Default is NormalMode
+                }
+            },
             showModal() {
                 this.$refs['highscore-modal'].show()
             },
@@ -181,7 +201,7 @@
                 }
             },
             saveScore() {
-                const gameMode = ls.get('settings') ? ls.get('settings')[0]['gameMode'] : 'NormalMode';
+                const gameMode = this.getSettings() ? this.getSettings()['gameMode'] : 'NormalMode';
                 const newScore = new Highscore(this.name, this.points, gameMode);
                 let allScores = [];
                 
@@ -205,7 +225,7 @@
                 }
 
                 if (this.clickedCards.length === 3) {
-                    clearInterval(this.intervalID);
+                    clearInterval(this.intervalIdForClickedCard);
                     this.clickedCardCounter = 5; // Resets the clickedCard Interval
                     // When a Set is found replace the old Cards with new Cards and redraw the board
                     if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
@@ -319,27 +339,32 @@
             },
             startSetInterval: function () {
                 const self = this;
-                setInterval(function () {
-                    if (self.pointsForCurrentSet - 1 >= 0) {
-                        self.pointsForCurrentSet = self.pointsForCurrentSet - 1;
+                this.intervalIdForCurrentSetCounter = setInterval(function () {
+                    if (self.pointsForCurrentSet - self.removePointsCounter >= 0) {
+                        self.pointsForCurrentSet = self.pointsForCurrentSet - self.removePointsCounter;
                     }
                 }, 1000);
             },
             clickedCardInterval: function () {
                 const self = this;
-                this.intervalID = setInterval(function () {
+                this.intervalIdForClickedCard = setInterval(function () {
                     if (self.clickedCardCounter - 0.1 >= 0) {
                         self.clickedCardCounter = self.clickedCardCounter - 0.1;
                     } else {
                         self.clickedCardCounter = 5;
-                        clearInterval(self.intervalID);
+                        clearInterval(self.intervalIdForClickedCard);
                         self.removePointsForCurrentSet();
                         self.resetClickedCards();
                     }
                 }, 100);
             },
         },
+        beforeDestroy () {
+            // Stops Timer for current Set 
+            clearInterval(this.intervalIdForCurrentSetCounter)
+        },
         mounted: function () {
+            this.showModal();
             this.createAllCards(); // Also Draws the First Board and Find all possible Sets
             this.createNewBoard(); // Creates random board of cards
 
