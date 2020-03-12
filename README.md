@@ -10,6 +10,11 @@ npm install
 npm run serve
 ```
 
+### Start test with Codecoverage
+```
+npm run test -- -u --collect-coverage
+```
+
 ### Compiles and minifies for production
 ```
 npm run build
