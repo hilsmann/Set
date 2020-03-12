@@ -47,14 +47,7 @@
 <script>
     import SecureLS from 'secure-ls';
     import { Card } from '../assets/card/card.js';
-
-    class Highscore {
-        constructor(name, score, gameMode) {
-            this.name = name;
-            this.score = score;
-            this.gameMode = gameMode
-        }
-    }
+    import { Highscore } from '../assets/highscore/highscore.js';
 
     const ls = new SecureLS();
 

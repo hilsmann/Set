@@ -1,7 +1,6 @@
-// Import Vue and the component being tested
 import { Card } from "../assets/card/card.js"
 
-describe("Game functionality", () => {
+describe("Set Card functionality", () => {
 
   const ONE = 1;
   const TEN = 10;
