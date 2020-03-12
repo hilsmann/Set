@@ -26,7 +26,7 @@
                 ref="game_canvas"
         />
         <b-modal ref="highscore-modal" hide-footer title="Congratulation you did it!">
-            <form ref="form" @submit.stop.prevent="handleSubmit">
+            <form ref="form" @submit.stop.prevent="saveScore">
                 <b-form-group
                         label="Please enter your name"
                         label-for="name-input"
@@ -47,9 +47,10 @@
 <script>
     import SecureLS from 'secure-ls';
     import { Card } from '../assets/card/card.js';
-    import { Highscore } from '../assets/highscore/highscore.js';
+    import { Score } from '../assets/score/score.js';
 
     const ls = new SecureLS();
+    const score = new Score();
 
     export default {
         name: "Game",
@@ -78,6 +79,10 @@
         methods: {
             getSettings() {
                 return ls.get('settings');
+            },
+            saveScore(){
+                score.save(this.name, this.points, this.gameMode);
+                this.$router.push('highscore');
             },
             // Methods for NormalMode/HardMode Values
             pointsForCurrentSetWithModes(){
@@ -176,18 +181,6 @@
                     this.clickedCards.push(cardIndex); // Add Card to the "checkForSet" Array
                     this.redrawCardAfterSelcted(cardIndex, "blue");
                 }
-            },
-            saveScore() {
-                const gameMode = this.getSettings() ? this.getSettings()['gameMode'] : 'NormalMode';
-                const newScore = new Highscore(this.name, this.points, gameMode);
-                let allScores = [];
-                
-                if (ls.get("set_game")) {
-                    allScores = ls.get("set_game");
-                }
-                allScores.push(newScore);
-                ls.set("set_game", allScores);
-                this.$router.push('highscore');
             },
             clickOnCanvas(event) {
                 const rect = this.canvas.getBoundingClientRect();

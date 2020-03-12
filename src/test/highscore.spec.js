@@ -1,4 +1,3 @@
-// Import Vue and the component being tested
 import { Highscore } from "../assets/highscore/highscore.js"
 
 describe("Highscore object functionality", () => {
