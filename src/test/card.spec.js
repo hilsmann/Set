@@ -1,7 +1,6 @@
-import { Card } from "../assets/card/card.js"
+import { Card } from "../assets/card/card.js";
 
 describe("Set Card functionality", () => {
-
   const ONE = 1;
   const TEN = 10;
   const image = new Image(); // create new Image
@@ -24,5 +23,4 @@ describe("Set Card functionality", () => {
     expect(newCard.x_max).toBe(TEN);
     expect(newCard.y_max).toBe(TEN);
   });
-
 });
