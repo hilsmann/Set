@@ -1,17 +1,24 @@
-import SecureLS from "secure-ls";
 import { Highscore } from "../highscore/highscore.js";
-
-const localStorage = new SecureLS();
+import { Settings } from "../settings/settings.js";
 
 export class Score {
+  constructor() {
+    this.settings = new Settings();
+
+    this.LOCAL_STORAGE_DATA_SET_GAME = "set_game";
+  }
+
   save(name, points, gameMode) {
     const newScore = new Highscore(name, points, gameMode);
     let allScores = [];
 
-    if (localStorage.get("set_game")) {
-      allScores = localStorage.get("set_game");
+    if (this.settings.get(this.LOCAL_STORAGE_DATA_SET_GAME)) {
+      allScores = this.settings.get(this.LOCAL_STORAGE_DATA_SET_GAME);
     }
     allScores.push(newScore);
-    localStorage.set("set_game", allScores);
+    this.settings.setListOfHighscores(
+      allScores,
+      this.LOCAL_STORAGE_DATA_SET_GAME
+    );
   }
 }

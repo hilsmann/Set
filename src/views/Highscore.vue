@@ -23,9 +23,11 @@
 </template>
 
 <script>
-    import SecureLS from 'secure-ls';
+    import { Settings } from '../assets/settings/settings.js';
 
-    const ls = new SecureLS();
+    const settings = new Settings();
+    const LOCAL_STORAGE_DATA_SET_GAME = "set_game";
+
     export default {
         name: "Highscore",
         data() {
@@ -37,7 +39,7 @@
                     {key: "name", sortable: true},
                     {key: "gameMode", sortable: true},
                 ],
-                allScores: ls.get('set_game') ? ls.get('set_game') : [],
+                allScores: settings.get(LOCAL_STORAGE_DATA_SET_GAME) ? settings.get(LOCAL_STORAGE_DATA_SET_GAME) : [],
                 sortBy: "score",
                 sortDesc: true
             };

@@ -45,20 +45,21 @@
 </template>
 
 <script>
-    import SecureLS from 'secure-ls';
     import { Card } from '../assets/card/card.js';
     import { Score } from '../assets/score/score.js';
+    import { Settings } from '../assets/settings/settings.js';
 
-    const ls = new SecureLS();
     const score = new Score();
+    const settings = new Settings();
+    const LOCAL_STORAGE_DATA_SETTINGS = 'settings';
 
     export default {
         name: "Game",
         data() {
             return {
-                hardMode: this.getSettings() ? this.getSettings()['hardMode'] : false,
-                gameMode: this.getSettings() ? this.getSettings()['gameMode'] : 'NormalMode', 
-                name: this.getSettings() ? this.getSettings()['playername'] : '',
+                hardMode: settings.getHardmodeFlag(LOCAL_STORAGE_DATA_SETTINGS),
+                gameMode: settings.getGameMode(LOCAL_STORAGE_DATA_SETTINGS), 
+                name: settings.getUserName(LOCAL_STORAGE_DATA_SETTINGS),
                 setCounter: 0,
                 allCards: [],
                 board: [],
@@ -77,24 +78,21 @@
             };
         },
         methods: {
-            getSettings() {
-                return ls.get('settings');
-            },
             saveScore(){
                 score.save(this.name, this.points, this.gameMode);
                 this.$router.push('highscore');
             },
             // Methods for NormalMode/HardMode Values
             pointsForCurrentSetWithModes(){
-                if(this.getSettings()) {
-                    return (this.getSettings()['hardMode'] ? 150 : 100);
+                if(settings.get(LOCAL_STORAGE_DATA_SETTINGS)) {
+                    return (settings.get(LOCAL_STORAGE_DATA_SETTINGS)['hardMode'] ? 150 : 100);
                 } else {
                     return 100; // Default is NormalMode
                 }
             },
             removePointsWithModes() {
-                if(this.getSettings()) {
-                    return (this.getSettings()['hardMode'] ? 3 : 1);
+                if(settings.get(LOCAL_STORAGE_DATA_SETTINGS)) {
+                    return (settings.get(LOCAL_STORAGE_DATA_SETTINGS)['hardMode'] ? 3 : 1);
                 } else {
                     return 1; // Default is NormalMode
                 }

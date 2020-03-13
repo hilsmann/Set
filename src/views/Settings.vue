@@ -1,7 +1,7 @@
 <template>
   <div class="centeredButtons">
-    <div class="mt-2">Your Playername is: {{ playername }}</div>
-    <b-form-input v-model="playername" placeholder="Enter your name"></b-form-input>
+    <div class="mt-2">Your Playername is: {{ username }}</div>
+    <b-form-input v-model="username" placeholder="Enter your name"></b-form-input>
     <b-form-checkbox v-model="checked" name="check-button" switch size="lg">
         switch game mode<b> {{ gameMode() }}</b>
     </b-form-checkbox>
@@ -10,20 +10,22 @@
 </template>
 
 <script>
-    import SecureLS from 'secure-ls';
+    import { Settings } from '../assets/settings/settings.js';
 
-    const ls = new SecureLS();
+    const settings = new Settings();
+    const LOCAL_STORAGE_DATA_SETTINGS = 'settings';
+
     export default {
         name: "Settings",
         data() {
             return {
-                playername: ls.get('settings') ? ls.get('settings')['playername'] : '',
-                checked: ls.get('settings') ? ls.get('settings')['hardMode'] : false,
+                username: settings.getUserName(LOCAL_STORAGE_DATA_SETTINGS),
+                checked: settings.getHardmodeFlag(LOCAL_STORAGE_DATA_SETTINGS),
             }
         },
         methods: {
             saveSettings() {
-                ls.set("settings", {playername: this.playername, gameMode: this.gameMode(), hardMode: this.checked});
+                settings.set(this.username, this.gameMode(), this.checked, LOCAL_STORAGE_DATA_SETTINGS);
                 this.$bvToast.toast('Successfully saved', {
                     title: 'Settings',
                     toaster: 'b-toaster-bottom-full',
