@@ -48,7 +48,9 @@
     import { Card } from '../assets/card/card.js';
     import { Score } from '../assets/score/score.js';
     import { Settings } from '../assets/settings/settings.js';
+    import { Points } from '../assets/points/points.js';
 
+    const points = new Points();
     const score = new Score();
     const settings = new Settings();
     const LOCAL_STORAGE_DATA_SETTINGS = 'settings';
@@ -69,8 +71,8 @@
                 x: 0,
                 y: 0,
                 points: 0,
-                pointsForCurrentSet: this.pointsForCurrentSetWithModes(),
-                removePointsCounter: this.removePointsWithModes(),
+                pointsForCurrentSet: points.forCurrentSetWithModes(),
+                removePointsCounter: points.removeWithModes(),
                 noMoreSets: false,
                 clickedCardCounter: 5, // Full Processbar at the beginning
                 intervalIdForClickedCard: '',
@@ -81,21 +83,6 @@
             saveScore(){
                 score.save(this.name, this.points, this.gameMode);
                 this.$router.push('highscore');
-            },
-            // Methods for NormalMode/HardMode Values
-            pointsForCurrentSetWithModes(){
-                if(settings.get(LOCAL_STORAGE_DATA_SETTINGS)) {
-                    return (settings.get(LOCAL_STORAGE_DATA_SETTINGS)['hardMode'] ? 150 : 100);
-                } else {
-                    return 100; // Default is NormalMode
-                }
-            },
-            removePointsWithModes() {
-                if(settings.get(LOCAL_STORAGE_DATA_SETTINGS)) {
-                    return (settings.get(LOCAL_STORAGE_DATA_SETTINGS)['hardMode'] ? 3 : 1);
-                } else {
-                    return 1; // Default is NormalMode
-                }
             },
             showModal() {
                 this.$refs['highscore-modal'].show()

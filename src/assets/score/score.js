@@ -12,7 +12,11 @@ export class Score {
     const newScore = new Highscore(name, points, gameMode);
     let allScores = [];
 
-    if (this.settings.get(this.LOCAL_STORAGE_DATA_SET_GAME)) {
+    if (
+      this.settings.get(this.LOCAL_STORAGE_DATA_SET_GAME) &&
+      Object.keys(this.settings.get(this.LOCAL_STORAGE_DATA_SET_GAME))
+        .length !== 0
+    ) {
       allScores = this.settings.get(this.LOCAL_STORAGE_DATA_SET_GAME);
     }
     allScores.push(newScore);
