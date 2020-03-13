@@ -3,6 +3,9 @@ import SecureLS from "secure-ls";
 export class Settings {
   constructor() {
     this.localStorage = new SecureLS();
+    this.USER_NAME = "playername";
+    this.GAME_MODE = "gameMode";
+    this.HARD_MODE_FLAG = "hardMode";
   }
 
   get(localStorageDataName) {
@@ -17,25 +20,45 @@ export class Settings {
     });
   }
 
+  delete(localStorageDataName) {
+    this.localStorage.set(localStorageDataName, {});
+  }
+
   setListOfHighscores(listOfHigscores, localStorageDataName) {
     this.localStorage.set(localStorageDataName, listOfHigscores);
   }
 
   getHardmodeFlag(localStorageDataName) {
-    return this.get(localStorageDataName)
-      ? this.get(localStorageDataName)["hardMode"]
-      : false;
+    if (
+      typeof this.get(localStorageDataName)[this.HARD_MODE_FLAG] !==
+        "undefined" ||
+      this.get(localStorageDataName)[this.HARD_MODE_FLAG]
+    ) {
+      return this.get(localStorageDataName)[this.HARD_MODE_FLAG];
+    } else {
+      return false;
+    }
   }
 
   getGameMode(localStorageDataName) {
-    return this.get(localStorageDataName)
-      ? this.get(localStorageDataName)["gameMode"]
-      : "NormalMode";
+    if (
+      typeof this.get(localStorageDataName)[this.GAME_MODE] !== "undefined" ||
+      this.get(localStorageDataName)[this.GAME_MODE]
+    ) {
+      return this.get(localStorageDataName)[this.GAME_MODE];
+    } else {
+      return "NormalMode";
+    }
   }
 
   getUserName(localStorageDataName) {
-    return this.get(localStorageDataName)
-      ? this.get(localStorageDataName)["playername"]
-      : "";
+    if (
+      typeof this.get(localStorageDataName)[this.USER_NAME] !== "undefined" ||
+      this.get(localStorageDataName[this.USER_NAME])
+    ) {
+      return this.get(localStorageDataName)[this.USER_NAME];
+    } else {
+      return "";
+    }
   }
 }
