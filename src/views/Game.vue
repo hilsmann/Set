@@ -1,5 +1,6 @@
 <template>
     <div>
+        <link rel=preload>
         <b-container class="container">
             <b-row>
                 <b-col>{{gameMode}}</b-col>
@@ -85,7 +86,7 @@
                 this.$router.push('highscore');
             },
             showModal() {
-                this.$refs['highscore-modal'].show()
+                this.$refs['highscore-modal'].show();
             },
             // TODO: Add a save Button for the current Game
             checkSetProperties(first, second, third) {
@@ -104,7 +105,7 @@
                         for (let thirdCard = secondCard + 1; thirdCard < this.board.length; thirdCard++) {
                             if (this.checkThreeCardsForASet(firstCard, secondCard, thirdCard)
                                 && this.board[firstCard].form !== 3 && this.board[secondCard].form !== 3 && this.board[thirdCard].form !== 3) {
-                                this.setCounter = this.setCounter + 1;
+                                this.setCounter += 1;
                             }
                         }
                     }
@@ -154,19 +155,6 @@
                     }
                 }
             },
-            redrawCardAfterSelcted(cardIndex, color) {
-                let card = this.board[cardIndex];
-                card = this.getCardPosition(card, cardIndex); // Set Position
-                card.setPosition(card.x_min, card.y_min, card.x_max + card.x_min, card.y_max + card.y_min);
-                this.drawCard(card, card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min, color);
-            },
-            addAndRedrawSelectedCard() {
-                const cardIndex = this.getClickedCard();
-                if (!this.clickedCards.includes(cardIndex)) {
-                    this.clickedCards.push(cardIndex); // Add Card to the "checkForSet" Array
-                    this.redrawCardAfterSelcted(cardIndex, "blue");
-                }
-            },
             clickOnCanvas(event) {
                 const rect = this.canvas.getBoundingClientRect();
                 this.x = event.clientX - rect.left;
@@ -176,7 +164,7 @@
                 // Starts an Interval when an Card is clicked. So the User has only 5 Seconds to click the other cards
                 if (this.clickedCardCounter === 5) {
                     this.clickedCardInterval();
-                    this.clickedCardCounter = this.clickedCardCounter - 0.1;
+                    this.clickedCardCounter -= 0.1;
                 }
 
                 if (this.clickedCards.length === 3) {
@@ -184,7 +172,7 @@
                     this.clickedCardCounter = 5; // Resets the clickedCard Interval
                     // When a Set is found replace the old Cards with new Cards and redraw the board
                     if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
-                        this.points = this.points + this.pointsForCurrentSet; // Adds points for the correct Set
+                        this.points += this.pointsForCurrentSet; // Adds points for the correct Set
                         if (this.allCards.length >= 3) {
                             for (let i = 0; i < 3; i++) {
                                 const newCard = this.getRandomCard(); // Get New Card
@@ -208,21 +196,50 @@
                     this.resetClickedCards();
                 }
             },
-            resetClickedCards: function () {
+            resetClickedCards() {
                 for (let j = 0; j < this.clickedCards.length; j++) {
                     this.redrawCardAfterSelcted(this.clickedCards[j], "#d9d9d9");
                 }
                 this.clickedCards = []; // Reset the clicked Cards
             },
-            getRandomCard: function () {
+            getRandomCard() {
                 const number = Math.floor(Math.random() * 100) % this.allCards.length;
                 const card = this.allCards[number];
                 this.allCards.splice(this.allCards.indexOf(card), 1);
                 return card;
             },
+            drawBoard: function () {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                for (let i = 0; i < 12; i++) {
+                    const card = this.getCardPosition(this.board[i], i);
+                    this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max, "#d9d9d9");
+                }
+            },
+            drawCard: function (card, dx, dy, dWidth, dHeight, color) {
+                // Putting the image and its coordinates on the canvas
+                const cardNumber = card.color + '' + card.form + '' + card.filling + '' + card.amount
+                const ctx = this.ctx;
+
+                card.image.src = require("@/assets/cards_svg/" + cardNumber + ".svg"); // load the image
+                card.image.onload = function () {
+                    // Clear the blue box Top and Bottom
+                    ctx.fillStyle = color;
+                    ctx.clearRect(dx + 1, dy + 1, dWidth, dHeight);
+                    ctx.clearRect(dx - 1, dy - 1, dWidth, dHeight);
+                    ctx.fillRect(dx, dy, dWidth, dHeight);
+                    ctx.drawImage(card.image, dx, dy, dWidth, dHeight);
+                    card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy));
+                }
+            },
+            removePointsForCurrentSet() {
+                if (this.pointsForCurrentSet >= 5) {
+                    this.pointsForCurrentSet -= 5;
+                }
+            },
             getCardPosition(card, postionOnBoard) {
-                const height = (window.innerHeight / 2) / 4;
-                const width = window.innerWidth / 3;
+                const height = this.canvas.height / 4;
+                const width = this.canvas.width / 3;
                 switch (postionOnBoard) {
                     case 0:
                         card.setPosition(0, 0, width, height);
@@ -263,48 +280,32 @@
                 }
                 return card;
             },
-            drawBoard: function () {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-                for (let i = 0; i < 12; i++) {
-                    const card = this.getCardPosition(this.board[i], i);
-                    this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max, "#d9d9d9");
+            redrawCardAfterSelcted(cardIndex, color) {
+                let card = this.board[cardIndex];
+                card = this.getCardPosition(card, cardIndex); // Set Position
+                card.setPosition(card.x_min, card.y_min, card.x_max + card.x_min, card.y_max + card.y_min);
+                this.drawCard(card, card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min, color);
+            },
+            addAndRedrawSelectedCard() {
+                const cardIndex = this.getClickedCard();
+                if (!this.clickedCards.includes(cardIndex)) {
+                    this.clickedCards.push(cardIndex); // Add Card to the "checkForSet" Array
+                    this.redrawCardAfterSelcted(cardIndex, "blue");
                 }
             },
-            drawCard: function (card, dx, dy, dWidth, dHeight, color) {
-                // Putting the image and its coordinates on the canvas
-                const cardNumber = card.color + '' + card.form + '' + card.filling + '' + card.amount
-                const ctx = this.ctx;
-
-                card.image.src = require("@/assets/cards_svg/" + cardNumber + ".svg"); // load the image
-                card.image.onload = function () {
-                    // Clear the blue box Top and Bottom
-                    ctx.fillStyle = color;
-                    ctx.clearRect(dx + 1, dy + 1, dWidth, dHeight);
-                    ctx.clearRect(dx - 1, dy - 1, dWidth, dHeight);
-                    ctx.fillRect(dx, dy, dWidth, dHeight);
-                    ctx.drawImage(card.image, dx, dy, dWidth, dHeight);
-                    card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy));
-                }
-            },
-            removePointsForCurrentSet() {
-                if (this.pointsForCurrentSet >= 5) {
-                    this.pointsForCurrentSet = this.pointsForCurrentSet - 5;
-                }
-            },
-            startSetInterval: function () {
+            startSetInterval() {
                 const self = this;
                 this.intervalIdForCurrentSetCounter = setInterval(function () {
                     if (self.pointsForCurrentSet - self.removePointsCounter >= 0) {
-                        self.pointsForCurrentSet = self.pointsForCurrentSet - self.removePointsCounter;
+                        self.pointsForCurrentSet -= self.removePointsCounter;
                     }
                 }, 1000);
             },
-            clickedCardInterval: function () {
+            clickedCardInterval() {
                 const self = this;
                 this.intervalIdForClickedCard = setInterval(function () {
                     if (self.clickedCardCounter - 0.1 >= 0) {
-                        self.clickedCardCounter = self.clickedCardCounter - 0.1;
+                        self.clickedCardCounter -= 0.1;
                     } else {
                         self.clickedCardCounter = 5;
                         clearInterval(self.intervalIdForClickedCard);
@@ -348,7 +349,7 @@
         display: block;
         position: absolute;
         overflow: hidden;
-        bottom: 0%;
+        bottom: 0;
         width: 100%;
         height: 50%;
     }
