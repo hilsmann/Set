@@ -49,10 +49,12 @@
     import { Score } from '../assets/score/score.js';
     import { Settings } from '../assets/settings/settings.js';
     import { Points } from '../assets/points/points.js';
+    import { Game } from '../assets/game/game.js';
 
     const points = new Points();
     const score = new Score();
     const settings = new Settings();
+    const game = new Game();
     const LOCAL_STORAGE_DATA_SETTINGS = 'settings';
 
     export default {
@@ -63,13 +65,9 @@
                 gameMode: settings.getGameMode(LOCAL_STORAGE_DATA_SETTINGS), 
                 name: settings.getUserName(LOCAL_STORAGE_DATA_SETTINGS),
                 setCounter: 0,
-                allCards: [],
-                board: [],
                 clickedCards: [],
                 canvas_height: window.innerHeight / 2,
                 canvas_width: window.innerWidth,
-                x: 0,
-                y: 0,
                 points: 0,
                 pointsForCurrentSet: points.forCurrentSetWithModes(),
                 removePointsCounter: points.removeWithModes(),
@@ -88,76 +86,37 @@
                 this.$refs['highscore-modal'].show();
             },
             // TODO: Add a save Button for the current Game
-            checkSetProperties(first, second, third) {
-                return (first === second && first === third) || (first !== second && first !== third && second !== third);
-            },
-            checkThreeCardsForASet(firstCard, secondCard, thirdCard) {
-                return (this.checkSetProperties(this.board[firstCard].color, this.board[secondCard].color, this.board[thirdCard].color) &&
-                    this.checkSetProperties(this.board[firstCard].amount, this.board[secondCard].amount, this.board[thirdCard].amount) &&
-                    this.checkSetProperties(this.board[firstCard].filling, this.board[secondCard].filling, this.board[thirdCard].filling) &&
-                    this.checkSetProperties(this.board[firstCard].form, this.board[secondCard].form, this.board[thirdCard].form));
-            },
             findAllSets() {
-                this.setCounter = 0;
-                for (let firstCard = 0; firstCard < this.board.length - 2; firstCard++) {
-                    for (let secondCard = firstCard + 1; secondCard < this.board.length - 1; secondCard++) {
-                        for (let thirdCard = secondCard + 1; thirdCard < this.board.length; thirdCard++) {
-                            if (this.checkThreeCardsForASet(firstCard, secondCard, thirdCard)
-                                && this.board[firstCard].form !== 3 && this.board[secondCard].form !== 3 && this.board[thirdCard].form !== 3) {
-                                this.setCounter += 1;
-                            }
-                        }
-                    }
-                }
+                this.setCounter = game.calculateNumberOfSets();
+
                 // When there is no Set left show a Button to reset the board
                 if (this.setCounter === 0) {
                     this.noMoreSets = true;
                 }
                 // When the Game is over open the Modal for the play name
-                if (this.setCounter === 0 && this.allCards.length === 0) {
+                if (this.setCounter === 0 && game.allCards.length === 0) {
                     this.showModal();
                 }
             },
             resetBoard() {
-                for (const boardCard of this.board) {
-                    this.allCards.push(boardCard);
+                for (const boardCard of game.board) {
+                    game.allCards.push(boardCard);
                 }
-                this.board = [];
                 this.createNewBoard();
                 this.noMoreSets = false;
             },
             createNewBoard() {
+                game.board = [];
                 for (let i = 0; i < 12; i++) {
-                    this.board.push(this.getRandomCard());
+                    game.board.push(this.getRandomCard());
                 }
                 this.drawBoard(); // Draws the Cards on the board
                 this.findAllSets(); // Finds all Sets on Board
             },
-            createAllCards() {
-                for (let color = 0; color < 3; color++) {
-                    for (let form = 0; form < 3; form++) {
-                        for (let filling = 0; filling < 3; filling++) {
-                            for (let amount = 1; amount < 4; amount++) {
-                                let img = new Image(); // create new Image
-                                img.src = require("@/assets/cards_svg/" + color + '' + form + '' + filling + '' + amount + ".svg");
-                                this.allCards.push(new Card(color, amount, filling, form, img));
-                            }
-                        }
-                    }
-                }
-            },
-            getClickedCard() {
-                for (let i = 0; i < this.board.length; i++) {
-                    if (this.board[i].x_min < this.x && this.board[i].y_min < this.y &&
-                        this.board[i].x_max > this.x && this.board[i].y_max > this.y) {
-                        return i;
-                    }
-                }
-            },
             clickOnCanvas(event) {
                 const rect = this.canvas.getBoundingClientRect();
-                this.x = event.clientX - rect.left;
-                this.y = event.clientY - rect.top;
+                game.x = event.clientX - rect.left;
+                game.y = event.clientY - rect.top;
                 this.addAndRedrawSelectedCard();
 
                 // Starts an Interval when an Card is clicked. So the User has only 5 Seconds to click the other cards
@@ -170,11 +129,11 @@
                     clearInterval(this.intervalIdForClickedCard);
                     this.clickedCardCounter = 5; // Resets the clickedCard Interval
                     // When a Set is found replace the old Cards with new Cards and redraw the board
-                    if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
+                    if (game.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
                         this.points += this.pointsForCurrentSet; // Adds points for the correct Set
-                        if (this.allCards.length >= 3) {
+                        if (game.allCards.length >= 3) {
                             for (const clickedCard of this.clickedCards) {
-                                this.board.splice(clickedCard, 1, this.getRandomCard()); // Set the new Card on the Board
+                                game.board.splice(clickedCard, 1, this.getRandomCard()); // Set the new Card on the Board
                             }
                         } else {
                             // When the last sets are taken from the Board and there are no cards left in the stock
@@ -182,7 +141,7 @@
                                 let img = new Image(); // create new Image
                                 img.src = require("@/assets/cards_svg/3333.svg");
                                 const emptyCard = new Card(3, 3, 3, 3, img); // Create empty Card
-                                this.board.splice(clickedCard, 1, emptyCard); // Set the new Card on the Board
+                                game.board.splice(clickedCard, 1, emptyCard); // Set the new Card on the Board
                             }
                         }
                         this.findAllSets();
@@ -201,16 +160,16 @@
                 this.clickedCards = []; // Reset the clicked Cards
             },
             getRandomCard() {
-                const number = Math.floor(Math.random() * 100) % this.allCards.length;
-                const card = this.allCards[number];
-                this.allCards.splice(this.allCards.indexOf(card), 1);
+                const number = Math.floor(Math.random() * 100) % game.allCards.length;
+                const card = game.allCards[number];
+                game.allCards.splice(game.allCards.indexOf(card), 1);
                 return card;
             },
             drawBoard: function () {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
                 for (let i = 0; i < 12; i++) {
-                    const card = this.getCardPosition(this.board[i], i);
+                    const card = this.getCardPosition(game.board[i], i);
                     this.drawCard(card, card.x_max, card.y_max, "#d9d9d9");
                 }
             },
@@ -279,13 +238,13 @@
                 return card;
             },
             redrawCardAfterSelcted(cardIndex, color) {
-                let card = this.board[cardIndex];
+                let card = game.board[cardIndex];
                 card = this.getCardPosition(card, cardIndex); // Set Position
                 card.setPosition(card.x_min, card.y_min, card.x_max + card.x_min, card.y_max + card.y_min);
                 this.drawCard(card,card.x_max - card.x_min, card.y_max - card.y_min, color);
             },
             addAndRedrawSelectedCard() {
-                const cardIndex = this.getClickedCard();
+                const cardIndex = game.getClickedCard();
                 if (!this.clickedCards.includes(cardIndex)) {
                     this.clickedCards.push(cardIndex); // Add Card to the "checkForSet" Array
                     this.redrawCardAfterSelcted(cardIndex, "blue");
@@ -318,7 +277,8 @@
             clearInterval(this.intervalIdForCurrentSetCounter);
         },
         mounted: function () {
-            this.createAllCards(); // Also Draws the First Board and Find all possible Sets
+            game.createAllCards(); // Also Draws the First Board and Find all possible Sets
+
             this.createNewBoard(); // Creates random board of cards
 
             this.startSetInterval();
