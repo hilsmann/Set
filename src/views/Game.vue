@@ -1,6 +1,5 @@
 <template>
     <div>
-        <link rel=preload>
         <b-container class="container">
             <b-row>
                 <b-col>{{gameMode}}</b-col>
@@ -120,8 +119,8 @@
                 }
             },
             resetBoard() {
-                for (let k = 0; k < 12; k++) {
-                    this.allCards.push(this.board[k]);
+                for (const boardCard of this.board) {
+                    this.allCards.push(boardCard);
                 }
                 this.board = [];
                 this.createNewBoard();
@@ -174,21 +173,20 @@
                     if (this.checkThreeCardsForASet(this.clickedCards[0], this.clickedCards[1], this.clickedCards[2])) {
                         this.points += this.pointsForCurrentSet; // Adds points for the correct Set
                         if (this.allCards.length >= 3) {
-                            for (let i = 0; i < 3; i++) {
-                                const newCard = this.getRandomCard(); // Get New Card
-                                this.board.splice(this.clickedCards[i], 1, newCard); // Set the new Card on the Board
+                            for (const clickedCard of this.clickedCards) {
+                                this.board.splice(clickedCard, 1, this.getRandomCard()); // Set the new Card on the Board
                             }
                         } else {
                             // When the last sets are taken from the Board and there are no cards left in the stock
-                            for (let l = 0; l < 3; l++) {
+                            for (const clickedCard of this.clickedCards) {
                                 let img = new Image(); // create new Image
                                 img.src = require("@/assets/cards_svg/3333.svg");
                                 const emptyCard = new Card(3, 3, 3, 3, img); // Create empty Card
-                                this.board.splice(this.clickedCards[l], 1, emptyCard); // Set the new Card on the Board
+                                this.board.splice(clickedCard, 1, emptyCard); // Set the new Card on the Board
                             }
                         }
                         this.findAllSets();
-                        this.pointsForCurrentSet = 100; // Reset the Points for one Set
+                        this.pointsForCurrentSet = points.forCurrentSetWithModes(); // Reset the Points for one Set
                     } else {
                         this.removePointsForCurrentSet();
                     }
@@ -197,8 +195,8 @@
                 }
             },
             resetClickedCards() {
-                for (let j = 0; j < this.clickedCards.length; j++) {
-                    this.redrawCardAfterSelcted(this.clickedCards[j], "#d9d9d9");
+                for (const clickedCard of this.clickedCards) {
+                    this.redrawCardAfterSelcted(clickedCard, "#d9d9d9");
                 }
                 this.clickedCards = []; // Reset the clicked Cards
             },
@@ -213,23 +211,23 @@
 
                 for (let i = 0; i < 12; i++) {
                     const card = this.getCardPosition(this.board[i], i);
-                    this.drawCard(card, card.x_min, card.y_min, card.x_max, card.y_max, "#d9d9d9");
+                    this.drawCard(card, card.x_max, card.y_max, "#d9d9d9");
                 }
             },
-            drawCard: function (card, dx, dy, dWidth, dHeight, color) {
+            drawCard: function (card, dWidth, dHeight, color) {
                 // Putting the image and its coordinates on the canvas
-                const cardNumber = card.color + '' + card.form + '' + card.filling + '' + card.amount
-                const ctx = this.ctx;
+                const self = this;
+                const imagesrc = card.image.src;
 
-                card.image.src = require("@/assets/cards_svg/" + cardNumber + ".svg"); // load the image
+                card.image.src = imagesrc // load the image
                 card.image.onload = function () {
                     // Clear the blue box Top and Bottom
-                    ctx.fillStyle = color;
-                    ctx.clearRect(dx + 1, dy + 1, dWidth, dHeight);
-                    ctx.clearRect(dx - 1, dy - 1, dWidth, dHeight);
-                    ctx.fillRect(dx, dy, dWidth, dHeight);
-                    ctx.drawImage(card.image, dx, dy, dWidth, dHeight);
-                    card.setPosition(dx, dy, (dWidth + dx), (dHeight + dy));
+                    self.ctx.fillStyle = color;
+                    self.ctx.clearRect(card.x_min + 1, card.y_min + 1, dWidth, dHeight);
+                    self.ctx.clearRect(card.x_min - 1, card.y_min - 1, dWidth, dHeight);
+                    self.ctx.fillRect(card.x_min, card.y_min, dWidth, dHeight);
+                    self.ctx.drawImage(card.image, card.x_min, card.y_min, dWidth, dHeight);
+                    card.setPosition(card.x_min, card.y_min, (dWidth + card.x_min), (dHeight + card.y_min));
                 }
             },
             removePointsForCurrentSet() {
@@ -284,7 +282,7 @@
                 let card = this.board[cardIndex];
                 card = this.getCardPosition(card, cardIndex); // Set Position
                 card.setPosition(card.x_min, card.y_min, card.x_max + card.x_min, card.y_max + card.y_min);
-                this.drawCard(card, card.x_min, card.y_min, card.x_max - card.x_min, card.y_max - card.y_min, color);
+                this.drawCard(card,card.x_max - card.x_min, card.y_max - card.y_min, color);
             },
             addAndRedrawSelectedCard() {
                 const cardIndex = this.getClickedCard();
@@ -317,7 +315,7 @@
         },
         beforeDestroy () {
             // Stops Timer for current Set 
-            clearInterval(this.intervalIdForCurrentSetCounter)
+            clearInterval(this.intervalIdForCurrentSetCounter);
         },
         mounted: function () {
             this.createAllCards(); // Also Draws the First Board and Find all possible Sets

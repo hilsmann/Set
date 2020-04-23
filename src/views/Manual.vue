@@ -40,13 +40,13 @@
             </b-row>
             <b-row>
                 <b-col class="border border-dark"
-                ><img src="@/assets/cards_svg/0001.svg" :width="canvas_width"
+                ><img src="@/assets/cards_svg/0001.svg" :width="canvas_width" alt="example_card_1"
                 /></b-col>
                 <b-col class="border border-dark"
-                ><img src="@/assets/cards_svg/1112.svg" :width="canvas_width"
+                ><img src="@/assets/cards_svg/1112.svg" :width="canvas_width" alt="example_card_2"
                 /></b-col>
                 <b-col class="border border-dark"
-                ><img src="@/assets/cards_svg/2223.svg" :width="canvas_width"
+                ><img src="@/assets/cards_svg/2223.svg" :width="canvas_width" alt="example_card_3"
                 /></b-col>
             </b-row>
             <b-row>
